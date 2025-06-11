@@ -14,6 +14,7 @@ const feedbackRoutes = require('./routes/feedbackRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const notificationRoutes = require('./routes/notifications');
 
 // College and Company models
 const CollegeStudent = require('./models/collegeStudent.model');
@@ -54,8 +55,8 @@ app.use((req, res, next) => {
 
 
 // Middleware for parsing JSON and urlencoded data
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // CORS setup
 const allowedOrigins = [
@@ -160,6 +161,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 //Raj Sir part
 app.use('/api/student', require('./routes/studentRegister'));

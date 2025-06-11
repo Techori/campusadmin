@@ -9,6 +9,7 @@ const RegistrationOtp = require('../models/RegistrationOtp');
 const Interview = require('../models/Interview');
 const Application = require('../models/CollegeApplication');
 const {emailTransport} = require('../config/email');
+const cloudinary = require('../config/cloudinary');
 //INDEX
 // app.get('/api/company/auth') ..... company authentication
 // app.get('/api/company/:companyid/roles') .....get roles by company Id  
@@ -623,4 +624,102 @@ router.get('/:companyId/interviews/complete', async (req, res) => {
     res.status(500).json({ message: 'Error fetching interviews data', error: error.message });
   }
 });
+
+// Edit company information
+router.put('/:id/edit', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      type,
+      industry,
+      website,
+      location,
+      contactEmail,
+      contactPhone,
+      adminContact,
+      companySize,
+      foundedYear,
+      description,
+      profileImage
+    } = req.body;
+
+    // Check if this is an image-only update
+    if (Object.keys(req.body).length === 1 && req.body.profileImage) {
+      try {
+        // Upload image to Cloudinary
+        const result = await cloudinary.uploader.upload(profileImage, {
+          folder: 'company_profiles',
+          resource_type: 'auto'
+        });
+
+        // Update company with new image URL
+        const company = await Company.findByIdAndUpdate(
+          id,
+          { profileImage: result.secure_url },
+          { new: true }
+        ).select('-password');
+
+        if (!company) {
+          return res.status(404).json({ error: 'Company not found' });
+        }
+
+        return res.json(company);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        return res.status(500).json({ error: 'Failed to upload image' });
+      }
+    }
+
+    // Validate required fields for full profile update
+    if (!name || !type || !industry || !location || !contactEmail || !contactPhone || 
+        !adminContact?.name || !adminContact?.email || !adminContact?.phone || !adminContact?.designation ||
+        !companySize || !foundedYear || !description) {
+      return res.status(400).json({ error: 'All required fields must be provided' });
+    }
+
+    // Check if company exists
+    const company = await Company.findById(id);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    // Check for duplicate company name or email
+    const existingCompany = await Company.findOne({
+      $and: [
+        { _id: { $ne: id } },
+        { $or: [{ name }, { contactEmail }] }
+      ]
+    });
+
+    if (existingCompany) {
+      return res.status(400).json({ error: 'Company name or email already exists' });
+    }
+
+    // Update company information
+    const updatedCompany = await Company.findByIdAndUpdate(
+      id,
+      {
+        name,
+        type,
+        industry,
+        website,
+        location,
+        contactEmail,
+        contactPhone,
+        adminContact,
+        companySize,
+        foundedYear,
+        description
+      },
+      { new: true }
+    ).select('-password');
+
+    res.json(updatedCompany);
+  } catch (error) {
+    console.error('Error updating company:', error);
+    res.status(500).json({ error: 'Failed to update company information' });
+  }
+});
+
 module.exports = router;

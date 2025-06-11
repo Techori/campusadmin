@@ -51,7 +51,10 @@ const collegeSchema = new mongoose.Schema({
     type: Number, // in acres
     required: true
   },
-  
+  profileImage: {
+    type: String,
+    default: 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/college_profiles/default-college'
+  }
 }, {
   timestamps: true
 });

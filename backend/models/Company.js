@@ -59,6 +59,10 @@ const companySchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  profileImage: {
+    type: String,
+    default: 'https://res.cloudinary.com/dcafjef0a/image/upload/v1/company_profiles/default-company'
   }
 }, {
   timestamps: true

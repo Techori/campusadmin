@@ -7,6 +7,7 @@ import Sidebar from '../Sidebar';
 import CollegeSettingsModal from './CollegeSettingsModal';
 import axios from 'axios';
 import calculateCampusScore from '../utils/calculateCampusScore';
+import { createStudentNotification, createCollegeNotification } from '../utils/notificationHelper';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -84,6 +85,14 @@ const CollegeDashboard = () => {
         sidebarUser.initials = res.data.name.substring(0, 2).toUpperCase();
         sidebarUser.name = res.data.name;
         sidebarUser.role = 'College Admin';
+        
+        // Create a test notification for the college
+        createCollegeNotification(
+          collegeId,
+          'Dashboard Loaded',
+          'Welcome back to your dashboard! You can now manage your students and view analytics.',
+          'info'
+        );
       })
       .catch(err => {
         console.error('Error fetching college:', err);
@@ -324,6 +333,18 @@ const CollegeDashboard = () => {
           ? { ...s, isCollegeVerified: true }
           : s
       ));
+      
+      // Get student name for notification
+      const student = students.find(s => s._id === studentId);
+      if (student) {
+        // Create notification for the student
+        await createStudentNotification(
+          studentId,
+          'Student Verified',
+          `Your profile has been verified by ${college?.name || 'the college'}. You can now apply for jobs and internships.`,
+          'success'
+        );
+      }
       
     } catch (err) {
       console.error('Error verifying student:', err);

@@ -658,7 +658,7 @@ const ViewJobs = () => {
                           onMouseOut={e => e.currentTarget.style.borderColor = '#e5e7eb'}
                         >
                           {/* Checkbox with Tick */}
-                              <div style={{ 
+                            <div style={{
                             width: '20px', 
                             height: '20px', 
                             border: '2px solid #059669',

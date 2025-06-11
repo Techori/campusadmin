@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import SearchBar from '../SearchBar';
 import Sidebar from '../Sidebar';
 import Analytics from './Analytics';
-import { FaChevronRight, FaTicketAlt, FaChartLine, FaUserGraduate } from 'react-icons/fa';
+import CompanySettingsModal from './CompanySettingsModal';
+import { FaChevronRight, FaTicketAlt, FaChartLine, FaUserGraduate, FaCog } from 'react-icons/fa';
 import axios from 'axios';
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -23,6 +24,7 @@ const Dashboard = () => {
   const [sidebarUser, setSidebarUser] = useState({ initials: 'CA', name: 'Company', role: 'Company Admin' });
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
   const itemsPerPage = showAll ? 10 : 3;
 
   // Fetch company data and applications
@@ -185,20 +187,20 @@ const Dashboard = () => {
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar navItems={navItems} user={sidebarUser} sectionLabel="COMPANY SERVICES" />
       <div className="main-container" style={{ marginLeft: 260, width: '100%', padding: '24px' }}>
-        <SearchBar />
+        <SearchBar onSettingsClick={() => setShowSettings(true)} />
         
         {/* Analytics Section */}
         <div style={{ marginBottom: '32px' }}>
-            <h2 style={{ 
-              fontSize: '1.8rem', 
-              fontWeight: 700, 
-              color: '#1e293b',
-              marginBottom: '24px'
-            }}>Company Dashboard</h2>
-            <Analytics />
+          <h2 style={{ 
+            fontSize: '1.8rem', 
+            fontWeight: 700, 
+            color: '#1e293b',
+            marginBottom: '24px'
+          }}>Company Dashboard</h2>
+          <Analytics />
         </div>
 
-            {/* Stats Cards */}
+        {/* Stats Cards */}
         <div style={{ 
               display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
@@ -373,6 +375,23 @@ const Dashboard = () => {
                 )}
         </div>
       </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <CompanySettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          company={company}
+          onUpdate={(updatedCompany) => {
+            setCompany(updatedCompany);
+            setSidebarUser({
+              initials: updatedCompany.name.substring(0, 2).toUpperCase(),
+              name: updatedCompany.name,
+              role: 'Company Admin'
+            });
+          }}
+        />
+      )}
     </div>
   );
 };
