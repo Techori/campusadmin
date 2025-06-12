@@ -26,7 +26,10 @@ const companySchema = new mongoose.Schema({
   contactEmail: {
     type: String,
     required: true,
-    trim: true
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Please fill a valid email address']
   },
   contactPhone: {
     type: String,
@@ -58,12 +61,32 @@ const companySchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: function() {
+      return !this.googleId; // Password is required only if not using Google auth
+    },
+    minlength: 6
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
   },
   profileImage: {
     type: String,
     default: 'https://res.cloudinary.com/dcafjef0a/image/upload/v1/company_profiles/default-company'
-  }
+  },
+  logo: {
+    type: String,
+    default: ''
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationToken: String,
+  verificationTokenExpires: Date,
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 }, {
   timestamps: true
 });

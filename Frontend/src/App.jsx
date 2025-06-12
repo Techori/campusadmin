@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet, useSearchParams, useNavigate } from 'react-router-dom';
 
 // Import all page components
 import Sidebar from './components/Student/Sidebar';
@@ -112,6 +112,61 @@ const AuthRoute = ({ isAuthenticated, children }) => {
     return <Navigate to="/" replace />;
   }
   return children;
+};
+
+// Google OAuth Callback Component
+const GoogleCallback = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const type = searchParams.get('type');
+    const role = searchParams.get('role');
+    const name = searchParams.get('name');
+    const email = searchParams.get('email');
+    const company = searchParams.get('company');
+    const error = searchParams.get('error');
+    
+    if (error) {
+      navigate('/login', { state: { error } });
+      return;
+    }
+
+    if (type && role) {
+      // Store user data in localStorage
+      localStorage.setItem('userType', type);
+      localStorage.setItem('userRole', role);
+      if (name) localStorage.setItem('userName', name);
+      if (email) localStorage.setItem('userEmail', email);
+      if (company) localStorage.setItem('userCompany', company);
+
+      // Redirect based on user type and role
+      switch (type) {
+        case 'company':
+          navigate(`/company/${role === 'company_admin' ? 'dashboard' : 'employee-dashboard'}`);
+          break;
+        case 'college':
+          navigate('/college/dashboard');
+          break;
+        case 'employee':
+          navigate('/employee/dashboard');
+          break;
+        default:
+          navigate('/');
+      }
+    } else {
+      navigate('/login?error=auth_failed');
+    }
+  }, [searchParams, navigate]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Completing authentication...</p>
+      </div>
+    </div>
+  );
 };
 
 const App = () => {
@@ -262,6 +317,9 @@ const App = () => {
 
         {/* Landing website */}
         <Route path="/contact" element={<Contact />} />
+
+        {/* Add the Google callback route */}
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
       </Route>
 
       {/* Catch all: redirect to dashboard or auth */}

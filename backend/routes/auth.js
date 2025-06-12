@@ -1,12 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs'); // or 'bcrypt' depending on your project
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
+require('dotenv').config({path: '../.env'});
 
 const College = require('../models/College');
 const Company = require('../models/Company');
 const Employee = require('../models/Employee');
 const RegistrationOtp = require('../models/RegistrationOtp');
+const { authenticateGoogle } = require('../config/auth');
+
+// Add this function to verify tokens
+const verifyToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Token verification successful:', decoded);
+    return decoded;
+  } catch (error) {
+    console.error('Token verification failed:', error.message);
+    return null;
+  }
+};
 
 //College-company login and (otp verification during registration)
 
@@ -18,7 +34,6 @@ router.post('/college-admin', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-
     const college = await College.findOne({ contactEmail: email });
     if (!college) {
       return res.status(404).json({ error: 'College not found' });
@@ -32,6 +47,54 @@ router.post('/college-admin', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Create JWT token
+    const token = jwt.sign(
+      { 
+        id: college._id,
+        type: 'college',
+        role: 'college_admin'
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    console.log('College Admin Login - Created JWT token:', {
+      id: college._id,
+      type: 'college',
+      role: 'college_admin',
+      token: token
+    });
+
+    // Set token in HTTP-only cookie
+    console.log('Setting cookie with token:', {
+      token: token,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax'
+    });
+    
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      domain: 'localhost',
+      path: '/',
+      maxAge: 3600000 // 1 hour
+    });
+
+    // Log all response headers
+    console.log('Response headers:', res.getHeaders());
+    console.log('Set-Cookie header:', res.getHeaders()['set-cookie']);
+
+    // Log the complete response object
+    console.log('Response object:', {
+      statusCode: res.statusCode,
+      headers: res.getHeaders(),
+      cookies: req.cookies
+    });
+
     const { password: pw, ...collegeData } = college.toObject();
     res.json({
       ...collegeData,
@@ -43,19 +106,18 @@ router.post('/college-admin', async (req, res) => {
     res.status(500).json({ error: 'Error verifying credentials' });
   }
 });
+
 router.post('/company-admin', async (req, res) => {
   try {
     const { email, password } = req.body;
    
     // First try to find an employee with admin type
     const employee = await Employee.findOne({ 
-      email: email, // Only allow admin type employees
+      email: email,
     });
 
     if (employee) {
       // Employee login flow
-      
-      // Compare hashed password
       var isMatch = await bcrypt.compare(password, employee.password);
       if(!isMatch){
         isMatch = (password === employee.password)
@@ -66,9 +128,41 @@ router.post('/company-admin', async (req, res) => {
 
       // Get company details
       const company = await Company.findById(employee.companyId);
-    if (!company) {
-      return res.status(404).json({ error: 'Company not found' });
-    }
+      if (!company) {
+        return res.status(404).json({ error: 'Company not found' });
+      }
+
+      // Create JWT token
+      const token = jwt.sign(
+        { 
+          id: employee._id,
+          type: 'employee',
+          role: employee.type
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      console.log('Employee Login - Created JWT token:', {
+        id: employee._id,
+        type: 'employee',
+        role: employee.type,
+        token: token
+      });
+
+      // Verify the token immediately after creation
+      const verifiedToken = verifyToken(token);
+      console.log('Token verification result:', verifiedToken);
+
+      // Set token in HTTP-only cookie
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: false, // Set to false for local development
+        sameSite: 'lax',
+        domain: 'localhost',
+        path: '/',
+        maxAge: 3600000 // 1 hour
+      });
 
       return res.json({
         _id: company._id,
@@ -79,7 +173,8 @@ router.post('/company-admin', async (req, res) => {
         employeeName: employee.name,
         employeeEmail: employee.email,
         employeeType: employee.type,
-        loginType: 'employee'
+        loginType: 'employee',
+        token: token // Temporarily send token in response for testing
       });
     }
 
@@ -98,6 +193,38 @@ router.post('/company-admin', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Create JWT token
+    const token = jwt.sign(
+      { 
+        id: company._id,
+        type: 'company',
+        role: 'company_admin'
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    console.log('Company Admin Login - Created JWT token:', {
+      id: company._id,
+      type: 'company',
+      role: 'company_admin',
+      token: token
+    });
+
+    // Verify the token immediately after creation
+    const verifiedToken = verifyToken(token);
+    console.log('Token verification result:', verifiedToken);
+
+    // Set token in HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: false, // Set to false for local development
+      sameSite: 'lax',
+      domain: 'localhost',
+      path: '/',
+      maxAge: 3600000 // 1 hour
+    });
+
     console.log('Company admin (direct) verified successfully');
     res.json({
       _id: company._id,
@@ -111,6 +238,7 @@ router.post('/company-admin', async (req, res) => {
     res.status(500).json({ error: 'Error verifying credentials' });
   }
 });
+
 router.post('/register/check-otp', async (req, res) => {
   try {
     const { email, otp, type } = req.body;
@@ -141,6 +269,223 @@ router.post('/register/check-otp', async (req, res) => {
     console.error('Error checking OTP validity:', err);
     res.status(500).json({ valid: false, error: 'Failed to check OTP validity.', details: err.message });
   }
+});
+
+// Register route
+router.post('/register', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 6 }),
+  body('name').notEmpty().trim()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password, name } = req.body;
+
+    // Check if company exists
+    let company = await Company.findOne({ email });
+    if (company) {
+      return res.status(400).json({ error: 'Company already exists' });
+    }
+
+    // Create new company
+    company = new Company({
+      email,
+      password,
+      name
+    });
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    company.password = await bcrypt.hash(password, salt);
+
+    await company.save();
+
+    // Create JWT token
+    const token = jwt.sign(
+      { companyId: company._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Set token in HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000 // 1 hour
+    });
+
+    res.json({
+      company: {
+        id: company._id,
+        name: company.name,
+        email: company.email
+      }
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Login route
+router.post('/login', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').exists()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;
+
+    // Check if company exists
+    const company = await Company.findOne({ email });
+    if (!company) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    // Verify password
+    const isMatch = await bcrypt.compare(password, company.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    // Create JWT token
+    const token = jwt.sign(
+      { 
+        id: company._id,
+        type: 'company',
+        role: 'company_admin'
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    console.log('Normal Login - Created JWT token:', {
+      id: company._id,
+      type: 'company',
+      role: 'company_admin',
+      token: token
+    });
+
+    // Set token in HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 3600000 // 1 hour
+    });
+
+    res.json({
+      company: {
+        id: company._id,
+        name: company.name,
+        email: company.email,
+        type: 'company',
+        role: 'company_admin'
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Google OAuth routes
+router.get('/google', authenticateGoogle);
+
+router.get('/google/callback', authenticateGoogle, (req, res) => {
+  try {
+    console.log('Google callback received:', req.user);
+    
+    if (!req.user) {
+      console.log('No user found in request');
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=contact_admin`);
+    }
+
+    // Create JWT token with user type and role
+    const token = jwt.sign(
+      { 
+        id: req.user._id,
+        type: req.user.type,
+        role: req.user.role
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    console.log('Google OAuth - Created JWT token:', {
+      id: req.user._id,
+      type: req.user.type,
+      role: req.user.role,
+      token: token
+    });
+
+    // Set token in HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 3600000 // 1 hour
+    });
+
+    // Send user data in response
+    const userData = {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      type: req.user.type,
+      role: req.user.role,
+      company: req.user.company
+    };
+
+    // Redirect to frontend with user data
+    const redirectUrl = `${process.env.FRONTEND_URL}/auth/google/callback?` + 
+      `type=${req.user.type}&` +
+      `role=${req.user.role}&` +
+      `name=${encodeURIComponent(req.user.name)}&` +
+      `email=${encodeURIComponent(req.user.email)}&` +
+      `company=${encodeURIComponent(JSON.stringify(req.user.company))}`;
+    
+    console.log('Redirecting to:', redirectUrl);
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+  }
+});
+
+// Logout route
+router.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully' });
+});
+
+// Add this test route
+router.get('/verify-token', (req, res) => {
+  const token = req.cookies.token;
+  console.log('Received token for verification:', token);
+  
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  res.json({
+    message: 'Token is valid',
+    user: decoded
+  });
 });
 
 module.exports = router;

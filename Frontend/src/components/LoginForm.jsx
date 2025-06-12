@@ -25,19 +25,15 @@ const handleSubmit = async (e) => {
   setLoading(true);
 
   try {
-    const response = await axios.post(`${apiEndpoint}`, formData);
+    const response = await axios.post(`${apiEndpoint}`, formData, {
+      withCredentials: true // Important for cookies
+    });
+    
+    console.log('Login response:', response.data);
     const { token, user } = response.data;
 
-    // if (!user) {
-    //   setError('Invalid credentials.');
-    //   setLoading(false);
-    //   return;
-    // }
-    // console.log('Login successful:', response.data);
-
-    // Save token and user info
+    // Save user info
     if (type === 'Sales') {
-      localStorage.setItem("token", token);
       localStorage.setItem("userRole", user.role);
       localStorage.setItem("userName", `${user.firstName} ${user.lastName}`);
     } else {

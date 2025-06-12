@@ -23,7 +23,10 @@ const collegeSchema = new mongoose.Schema({
   contactEmail: {
     type: String,
     required: true,
-    trim: true
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Please fill a valid email address']
   },
   contactPhone: {
     type: String,
@@ -31,7 +34,15 @@ const collegeSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: function() {
+      return !this.googleId; // Password is required only if not using Google auth
+    },
+    minlength: 6
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
   },
   placementOfficer: {
     name: String,
@@ -54,9 +65,32 @@ const collegeSchema = new mongoose.Schema({
   profileImage: {
     type: String,
     default: 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/college_profiles/default-college'
-  }
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: ['public', 'private'],
+    default: 'public'
+  },
+  logo: {
+    type: String,
+    default: ''
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationToken: String,
+  verificationTokenExpires: Date,
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 }, {
   timestamps: true
 });
 
-module.exports = mongoose.model('College', collegeSchema); 
+const College = mongoose.model('College', collegeSchema);
+
+module.exports = College; 

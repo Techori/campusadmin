@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const College = require('../models/College');
-require('dotenv').config({path: "../.env"});
+require('dotenv').config();
 
 // MongoDB connection string - update with your actual connection string
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/campusadmin';
