@@ -6,6 +6,7 @@ import Analytics from './Analytics';
 import CompanySettingsModal from './CompanySettingsModal';
 import { FaChevronRight, FaTicketAlt, FaChartLine, FaUserGraduate, FaCog } from 'react-icons/fa';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {

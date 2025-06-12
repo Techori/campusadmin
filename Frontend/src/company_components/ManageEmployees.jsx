@@ -4,6 +4,7 @@ import { FaChevronRight, FaTicketAlt, FaChartLine, FaUserGraduate, FaPlus, FaEdi
 import Sidebar from '../Sidebar';
 import SearchBar from '../SearchBar';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 import CompanySettingsModal from './CompanySettingsModal';
 const apiUrl = import.meta.env.VITE_API_URL;
 

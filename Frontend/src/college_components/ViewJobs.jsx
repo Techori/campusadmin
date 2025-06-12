@@ -9,7 +9,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 // Configure axios defaults
 
 axios.defaults.headers.common['Content-Type'] = 'application/json';
-
+axios.defaults.withCredentials = true;
 const ViewJobs = () => {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);

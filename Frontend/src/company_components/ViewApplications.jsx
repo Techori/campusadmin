@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import { FaChevronRight, FaTicketAlt, FaChartLine, FaCheck, FaTimes, FaCalendarAlt, FaUsers, FaUser, FaStar, FaUserGraduate } from 'react-icons/fa';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 import SearchBar from '../SearchBar';
 import calculateCampusScore from '../utils/calculateCampusScore';
 import CompanySettingsModal from './CompanySettingsModal';

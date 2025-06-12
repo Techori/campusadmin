@@ -9,6 +9,7 @@ import SearchBar from '../SearchBar';
 import Sidebar from '../Sidebar';
 import { FaChevronRight, FaCalendarAlt, FaClock, FaVideo, FaTimes, FaSpinner, FaTicketAlt, FaChartLine, FaUserGraduate, FaCheck, FaTrash, FaEye, FaCopy, FaFileAlt, FaExternalLinkAlt } from 'react-icons/fa';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 import './ScheduledInterviews.css';
 import '../index.css'; // Ensure global styles are applied
 import calculateCampusScore from '../utils/calculateCampusScore';

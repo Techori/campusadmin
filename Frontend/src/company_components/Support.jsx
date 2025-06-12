@@ -3,6 +3,7 @@ import { FaChevronRight, FaTicketAlt, FaChartLine, FaPaperPlane, FaUserGraduate,
 import Sidebar from '../Sidebar';
 import SearchBar from '../SearchBar';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 import CompanySettingsModal from './CompanySettingsModal';
 
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaSave, FaEdit, FaBuilding, FaMapMarkerAlt, FaPhone, FaEnvelope, FaGlobe, FaUserTie, FaCode, FaRulerCombined, FaCamera } from 'react-icons/fa';
 import axios from 'axios';
-
+axios.defaults.withCredentials = true;
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const CollegeSettingsModal = ({ isOpen, onClose, college, onUpdate }) => {

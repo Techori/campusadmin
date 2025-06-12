@@ -6,6 +6,7 @@ import { useLocation, Link, useParams } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import CollegeSettingsModal from './CollegeSettingsModal';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 import calculateCampusScore from '../utils/calculateCampusScore';
 import { createStudentNotification, createCollegeNotification } from '../utils/notificationHelper';
 

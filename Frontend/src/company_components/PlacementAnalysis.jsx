@@ -3,6 +3,7 @@ import { FaChevronRight, FaTicketAlt, FaChartLine, FaDownload, FaUserGraduate } 
 import Sidebar from '../Sidebar';
 import SearchBar from '../SearchBar';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import CompanySettingsModal from './CompanySettingsModal';
 const apiUrl = import.meta.env.VITE_API_URL;

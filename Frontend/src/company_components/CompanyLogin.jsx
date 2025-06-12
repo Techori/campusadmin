@@ -96,7 +96,7 @@ const CompanyLogin = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${apiUrl}/api/auth/company-admin`, formData);
+      const response = await axios.post(`${apiUrl}/api/auth/company-admin`, formData, { withCredentials: true });
       const { _id, name, role } = response.data;
 
       localStorage.setItem('companyId', _id);
@@ -419,37 +419,6 @@ const CompanyLogin = () => {
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
-
-              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                <p style={{ color: '#6B7280', marginBottom: '1rem' }}>Or</p>
-                <button
-                  type="button"
-                  onClick={() => window.location.href = `${apiUrl}/api/auth/google`}
-                  style={{
-                    width: '100%',
-                    padding: '1rem',
-                    background: 'white',
-                    color: '#1F2937',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '0.75rem',
-                    fontSize: '1rem',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <img 
-                    src="https://www.google.com/favicon.ico" 
-                    alt="Google" 
-                    style={{ width: '20px', height: '20px' }}
-                  />
-                  Sign in with Google
-                </button>
-              </div>
             </form>
             <div style={{ marginTop: '2rem', textAlign: 'center' }}>
               <button

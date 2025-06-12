@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import { FaChevronRight , FaTicketAlt , FaChartLine, FaUserGraduate } from 'react-icons/fa';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 import { CSSTransition } from 'react-transition-group';
 import './ScheduledInterviews.css';
 import SearchBar from '../SearchBar';
