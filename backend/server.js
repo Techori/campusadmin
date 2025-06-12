@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const { passport } = require('./config/auth');
 
 // Import route modules
 const jobRoutes = require('./routes/jobRoutes');
@@ -36,31 +35,45 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 
-
-
-
-// Middleware for parsing JSON and urlencoded data
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use(cookieParser());
-
 // Debug middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
 });
 
-// CORS configuration
+// Middleware for parsing JSON and urlencoded data
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(cookieParser());
+
+//cors setup
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://campusadmin-y4hh.vercel.app',
+  'https://campusadmin.vercel.app',
+  'https://campusconnect-sumit-sahus-projects-83ef9bf1.vercel.app',
+  'https://campusconnect-git-main-sumit-sahus-projects-83ef9bf1.vercel.app',
+  'https://campusconnect-dk9xkuzk0-sumit-sahus-projects-83ef9bf1.vercel.app'
+];
+if (process.env.REACT_URL) allowedOrigins.push(process.env.REACT_URL);
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const normalizedAllowedOrigins = allowedOrigins.map(o => o.replace(/\/$/, ''));
+    if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS not allowed for origin: ${origin}`), false);
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
-  exposedHeaders: ['Set-Cookie']
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200,
 }));
 
-// Initialize Passport
-app.use(passport.initialize());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
