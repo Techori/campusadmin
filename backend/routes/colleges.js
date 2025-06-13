@@ -6,7 +6,7 @@ const CollegeStudent = require('../models/collegeStudent.model');
 const RegistrationOtp = require('../models/RegistrationOtp');
 const {emailTransport} = require('../config/email');
 const cloudinary = require('../config/cloudinary');
-
+const {isCollegeAuthenticated,isCollegeAdmin} = require('../middleware/auth');
 // app.get('/api/college/:collegeId/student/:studentId') ..... Get a single student by ID and college
 // app.put('/api/college/:collegeId/student/:studentId') .....Put endpoint for updating college student profiles
 // app.post('/api/college/register/initiate') .....Post Initiate college registration: send OTP
@@ -34,7 +34,7 @@ router.get('/:collegeId/student/:studentId', async (req, res) => {
   }
 });
 
-router.put('/:collegeId/student/:studentId', async (req, res) => {
+router.put('/:collegeId/student/:studentId',isCollegeAuthenticated,isCollegeAdmin, async (req, res) => {
   try {
     
     const student = await CollegeStudent.findOneAndUpdate(
@@ -191,9 +191,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.get('/api/colleges', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const colleges = await College.find().sort({ name: 1 });
+    let limit = req.query.limit || 10;
+    const colleges = await College.find().sort({ name: 1 }).limit(limit).offset(req.query.offset || 0);
     if (colleges.length === 0) {
       res.json("no college in database")
     }
@@ -207,7 +208,7 @@ router.get('/api/colleges', async (req, res) => {
   }
 });
 
-router.get('/api/colleges/email/:email', async (req, res) => {
+router.get('/email/:email', async (req, res) => {
   try {
     const college = await College.findOne({ contactEmail: req.params.email });
     if (!college) {
@@ -220,7 +221,7 @@ router.get('/api/colleges/email/:email', async (req, res) => {
 });
 
 // Edit college information
-router.put('/:id/edit', async (req, res) => {
+router.put('/:id/edit',isCollegeAuthenticated,isCollegeAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { 

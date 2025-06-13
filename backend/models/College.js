@@ -34,15 +34,7 @@ const collegeSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: function() {
-      return !this.googleId; // Password is required only if not using Google auth
-    },
-    minlength: 6
-  },
-  googleId: {
-    type: String,
-    sparse: true,
-    unique: true
+    required: true
   },
   placementOfficer: {
     name: String,
@@ -90,6 +82,9 @@ const collegeSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Remove password validation that checks for googleId
+collegeSchema.path('password').required(true);
 
 const College = mongoose.model('College', collegeSchema);
 

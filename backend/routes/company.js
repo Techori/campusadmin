@@ -10,6 +10,7 @@ const Interview = require('../models/Interview');
 const Application = require('../models/CollegeApplication');
 const {emailTransport} = require('../config/email');
 const cloudinary = require('../config/cloudinary');
+const {isCompanyAuthenticated,isCompanyHR,isCompanyAdmin,isCompanyOwner} = require('../middleware/auth');
 //INDEX
 // app.get('/api/company/auth') ..... company authentication
 // app.get('/api/company/:companyid/roles') .....get roles by company Id  
@@ -28,7 +29,7 @@ const cloudinary = require('../config/cloudinary');
 // app.get('/api/company/:companyid/applications/complete') .....get Optimized endpoint for company applications with all related data
 // app.get('/api/company/:companyid/interviews/complete') .....Optimized endpoint for company scheduled interviews with all related data
 
-router.post('auth', async (req, res) => {
+router.post('/auth',  async (req, res) => {
   const { email, password } = req.body;
   try {
     const company = await Company.findOne({ contactEmail: email });
@@ -46,7 +47,7 @@ router.post('auth', async (req, res) => {
   }
 });
 
-router.get('/:companyId/roles', async (req, res) => {
+router.get('/:companyId/roles',isCompanyAuthenticated, async (req, res) => {
   try {
     const roles = await Role.find({ companyId: req.params.companyId })
       .populate('companyId', 'name')
@@ -56,7 +57,7 @@ router.get('/:companyId/roles', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-router.post('/:companyId/roles', async (req, res) => {
+router.post('/:companyId/roles',isCompanyAuthenticated,isCompanyAdmin, async (req, res) => {
   try {
     const {companyId} = req.params;
     var role = {...req.body,companyId:companyId.toString()};
@@ -67,7 +68,7 @@ router.post('/:companyId/roles', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-router.get('/:companyId', async (req, res) => {
+router.get('/:companyId',isCompanyAuthenticated, async (req, res) => {
   try { 
     const company = await Company.findById(req.params.companyId);
     
@@ -80,7 +81,7 @@ router.get('/:companyId', async (req, res) => {
   }
 });
 
-router.get('/applications/:companyId', async (req, res) => {
+router.get('/applications/:companyId',isCompanyAuthenticated, async (req, res) => {
   try {
     const applications = await Application.find({ applicationTo: req.params.companyId })
       .populate('applicationFrom', 'name')
@@ -92,7 +93,7 @@ router.get('/applications/:companyId', async (req, res) => {
   }
 });
 
-router.patch('/applications/:applicationId/status', async (req, res) => {
+router.patch('/applications/:applicationId/status',isCompanyAuthenticated, async (req, res) => {
   try {
     const { status } = req.body;
     const application = await Application.findByIdAndUpdate(
@@ -109,7 +110,7 @@ router.patch('/applications/:applicationId/status', async (req, res) => {
   }
 });
 
-router.delete('/applications/:applicationId', async (req, res) => {
+router.delete('/applications/:applicationId',isCompanyAuthenticated,async (req, res) => {
   try {
     const application = await Application.findByIdAndDelete(req.params.applicationId);
     if (!application) {
@@ -121,7 +122,7 @@ router.delete('/applications/:applicationId', async (req, res) => {
   }
 });
 
-router.get('/roles', async (req, res) => {
+router.get('/roles',isCompanyAuthenticated, async (req, res) => {
   try {
     const roles = await Role.find().populate('companyId', 'name').sort({ createdAt: -1 });
     res.json(roles);
@@ -130,7 +131,7 @@ router.get('/roles', async (req, res) => {
   }
 });
 
-router.post('/roles', async (req, res) => {
+router.post('/roles',isCompanyAuthenticated,isCompanyAdmin, async (req, res) => {
   try {
     const role = new Role(req.body);
     await role.save();
@@ -139,7 +140,7 @@ router.post('/roles', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-router.put('/roles/:id', async (req, res) => {
+router.put('/roles/:id',isCompanyAuthenticated,isCompanyAdmin, async (req, res) => {
   try {
     const updatedRole = await Role.findByIdAndUpdate(
       req.params.id,
@@ -155,7 +156,7 @@ router.put('/roles/:id', async (req, res) => {
   }
 });
 
-router.delete('/roles/:id', async (req, res) => {
+router.delete('/roles/:id',isCompanyAuthenticated,isCompanyAdmin, async (req, res) => {
   try {
     const deletedRole = await Role.findByIdAndDelete(req.params.id);
     if (!deletedRole) {
@@ -290,7 +291,7 @@ router.post('/register/verify', async (req, res) => {
   }
 });
 
-router.post('/:companyId/employees', async (req, res) => {
+router.post('/:companyId/employees',isCompanyAuthenticated,isCompanyAdmin, async (req, res) => {
   try {
     const { companyId } = req.params;
     const {
@@ -401,7 +402,7 @@ router.post('/:companyId/employees', async (req, res) => {
     res.status(500).json({ error: 'Failed to add employee', details: error.message });
   }
 });
-router.get('/:companyId/applications/complete', async (req, res) => {
+router.get('/:companyId/applications/complete',isCompanyAuthenticated, async (req, res) => {
   try {
     const { companyId } = req.params;
 
@@ -537,7 +538,7 @@ router.get('/:companyId/applications/complete', async (req, res) => {
   }
 });
 
-router.get('/:companyId/interviews/complete', async (req, res) => {
+router.get('/:companyId/interviews/complete',isCompanyAuthenticated, async (req, res) => {
   try {
     const { companyId } = req.params;
 
@@ -626,7 +627,7 @@ router.get('/:companyId/interviews/complete', async (req, res) => {
 });
 
 // Edit company information
-router.put('/:id/edit', async (req, res) => {
+router.put('/:id/edit',isCompanyAuthenticated,isCompanyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {

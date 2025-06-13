@@ -17,20 +17,11 @@ const employeeSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: function() {
-      return !this.googleId; // Password is required only if not using Google auth
-    },
-    minlength: 6 // Example minimum length
-  },
-  googleId: {
-    type: String,
-    sparse: true,
-    unique: true
+    required: true
   },
   type: {
     type: String,
-    required: true,
-    enum: ['employee', 'hr', 'admin'], // Defined types
+    enum: ['employee', 'hr', 'admin'],
     default: 'employee'
   },
   companyId: {
@@ -38,19 +29,16 @@ const employeeSchema = new mongoose.Schema({
     ref: 'Company',
     required: true
   },
-  // Add other potential fields here as needed, e.g., phone, department, position
-  phone: {
-    type: String,
-    trim: true
-  },
   department: {
     type: String,
     trim: true
   },
-  position: {
+  designation: String,
+  phone: {
     type: String,
     trim: true
   },
+  profileImage: String,
   verified: {
     type: Boolean,
     default: false
@@ -77,6 +65,9 @@ const employeeSchema = new mongoose.Schema({
 }, {
   timestamps: true // Adds createdAt and updatedAt fields
 });
+
+// Remove password validation that checks for googleId
+employeeSchema.path('password').required(true);
 
 const Employee = mongoose.model('Employee', employeeSchema);
 

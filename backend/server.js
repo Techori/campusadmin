@@ -41,12 +41,12 @@ const app = express();
 
 // Middleware for parsing JSON and urlencoded data
 app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
 // Debug middleware
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`, req.cookies, "cookies", req.headers, "headers");
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
 });
 

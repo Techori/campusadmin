@@ -61,15 +61,7 @@ const companySchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: function() {
-      return !this.googleId; // Password is required only if not using Google auth
-    },
-    minlength: 6
-  },
-  googleId: {
-    type: String,
-    sparse: true,
-    unique: true
+    required: true
   },
   profileImage: {
     type: String,
@@ -90,5 +82,8 @@ const companySchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Remove password validation that checks for googleId
+companySchema.path('password').required(true);
 
 module.exports = mongoose.model('Company', companySchema); 

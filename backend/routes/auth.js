@@ -5,25 +5,13 @@ const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 require('dotenv').config({path: '../.env'});
+const { isCompanyAuthenticated } = require('../middleware/auth');
 
 const College = require('../models/College');
 const Company = require('../models/Company');
 const Employee = require('../models/Employee');
 const RegistrationOtp = require('../models/RegistrationOtp');
-const { authenticateGoogle } = require('../config/auth');
-
-// Add this function to verify tokens
-const verifyToken = (token) => {
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Token verification successful:', decoded);
-    return decoded;
-  } catch (error) {
-    console.error('Token verification failed:', error.message);
-    return null;
-  }
-};
-
+const {verifyToken} = require('../middleware/auth');
 //College-company login and (otp verification during registration)
 
 // app.post('/api/auth/college-admin') .....Post, login using college-contact mail
@@ -55,45 +43,16 @@ router.post('/college-admin', async (req, res) => {
         role: 'college_admin'
       },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
-
-    console.log('College Admin Login - Created JWT token:', {
-      id: college._id,
-      type: 'college',
-      role: 'college_admin',
-      token: token
-    });
-
-    // Set token in HTTP-only cookie
-    console.log('Setting cookie with token:', {
-      token: token,
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax'
-    });
     
     res.cookie('token', token, {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
-      domain: 'localhost',
-      path: '/',
-      maxAge: 3600000 // 1 hour
+      maxAge: 86400000 // 24 hours
     });
 
-    // Log all response headers
-    console.log('Response headers:', res.getHeaders());
-    console.log('Set-Cookie header:', res.getHeaders()['set-cookie']);
-
-    // Log the complete response object
-    console.log('Response object:', {
-      statusCode: res.statusCode,
-      headers: res.getHeaders(),
-      cookies: req.cookies
-    });
 
     const { password: pw, ...collegeData } = college.toObject();
     res.json({
@@ -140,31 +99,26 @@ router.post('/company-admin', async (req, res) => {
           role: employee.type
         },
         process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        { expiresIn: '24h' }
       );
 
-      console.log('Employee Login - Created JWT token:', {
-        id: employee._id,
-        type: 'employee',
-        role: employee.type,
-        token: token
-      });
-
       // Verify the token immediately after creation
-      const verifiedToken = verifyToken(token);
-      console.log('Token verification result:', verifiedToken);
+      try {
+        jwt.verify(token, process.env.JWT_SECRET);
+      } catch (error) {
+        console.error('Token verification failed:', error.message);
+        return res.status(500).json({ error: 'Failed to verify token' });
+      }
 
       // Set token in HTTP-only cookie
       res.cookie('token', token, {
         httpOnly: true,
-        secure: false, // Set to false for local development
+        secure: false,
         sameSite: 'lax',
-        domain: 'localhost',
-        path: '/',
-        maxAge: 3600000 // 1 hour
+        maxAge: 86400000 // 24 hours
       });
 
-      return res.json({
+      const response = {
         _id: company._id,
         name: company.name,
         email: company.contactEmail,
@@ -173,9 +127,10 @@ router.post('/company-admin', async (req, res) => {
         employeeName: employee.name,
         employeeEmail: employee.email,
         employeeType: employee.type,
-        loginType: 'employee',
-        token: token // Temporarily send token in response for testing
-      });
+        loginType: 'employee'
+      };
+
+      return res.json(response);
     }
 
     // If no employee found, try company login
@@ -201,31 +156,20 @@ router.post('/company-admin', async (req, res) => {
         role: 'company_admin'
       },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
 
-    console.log('Company Admin Login - Created JWT token:', {
-      id: company._id,
-      type: 'company',
-      role: 'company_admin',
-      token: token
-    });
-
     // Verify the token immediately after creation
-    const verifiedToken = verifyToken(token);
-    console.log('Token verification result:', verifiedToken);
+    verifyToken(token);
 
     // Set token in HTTP-only cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false, // Set to false for local development
+      secure: false,      // Only use true for HTTPS
       sameSite: 'lax',
-      domain: 'localhost',
-      path: '/',
-      maxAge: 3600000 // 1 hour
+      maxAge: 86400000     // 24 hours
     });
 
-    console.log('Company admin (direct) verified successfully');
     res.json({
       _id: company._id,
       name: company.name,
@@ -398,70 +342,6 @@ router.post('/login', [
   }
 });
 
-// Google OAuth routes
-router.get('/google', authenticateGoogle);
-
-router.get('/google/callback', authenticateGoogle, (req, res) => {
-  try {
-    console.log('Google callback received:', req.user);
-    
-    if (!req.user) {
-      console.log('No user found in request');
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=contact_admin`);
-    }
-
-    // Create JWT token with user type and role
-    const token = jwt.sign(
-      { 
-        id: req.user._id,
-        type: req.user.type,
-        role: req.user.role
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    console.log('Google OAuth - Created JWT token:', {
-      id: req.user._id,
-      type: req.user.type,
-      role: req.user.role,
-      token: token
-    });
-
-    // Set token in HTTP-only cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 3600000 // 1 hour
-    });
-
-    // Send user data in response
-    const userData = {
-      id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      type: req.user.type,
-      role: req.user.role,
-      company: req.user.company
-    };
-
-    // Redirect to frontend with user data
-    const redirectUrl = `${process.env.FRONTEND_URL}/auth/google/callback?` + 
-      `type=${req.user.type}&` +
-      `role=${req.user.role}&` +
-      `name=${encodeURIComponent(req.user.name)}&` +
-      `email=${encodeURIComponent(req.user.email)}&` +
-      `company=${encodeURIComponent(JSON.stringify(req.user.company))}`;
-    
-    console.log('Redirecting to:', redirectUrl);
-    res.redirect(redirectUrl);
-  } catch (error) {
-    console.error('Google callback error:', error);
-    res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
-  }
-});
-
 // Logout route
 router.post('/logout', (req, res) => {
   res.clearCookie('token');
@@ -486,6 +366,30 @@ router.get('/verify-token', (req, res) => {
     message: 'Token is valid',
     user: decoded
   });
+});
+
+// Protected route: Get company profile (only if authenticated)
+router.get('/company/profile', isCompanyAuthenticated, async (req, res) => {
+  try {
+    // req.user is set by the middleware
+    if (req.user.type !== 'company' && req.user.type !== 'employee') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    // Fetch company info
+    const company = await Company.findById(req.user.id || req.user.companyId);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+    res.json({
+      id: company._id,
+      name: company.name,
+      email: company.contactEmail,
+      type: req.user.type,
+      role: req.user.role
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch company profile' });
+  }
 });
 
 module.exports = router;

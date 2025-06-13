@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -15,6 +14,7 @@ import { Input } from "../../components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../components/ui/dropdown-menu";
 import { Badge } from "../../components/ui/badge";
 import { toast } from "sonner";
+import axios from "axios";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -33,10 +33,25 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     return location.pathname === path ? "bg-blue-800" : "";
   };
 
-  const handleLogout = () => {
-    // In a real app, you would clear tokens, session data, etc.
-    toast.success("Logged out successfully");
-    navigate("/support"); // Redirect to support page or login page
+  const handleLogout = async () => {
+    try {
+      // Call logout endpoint
+      await axios.post('/api/auth/logout', {}, {
+        withCredentials: true
+      });
+      
+      // Clear any local storage or state
+      localStorage.removeItem('user');
+      
+      // Show success message
+      toast.success("Logged out successfully");
+      
+      // Redirect to login page
+      navigate("/login");
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error("Error logging out");
+    }
   };
 
   const markNotificationAsRead = (notificationId: number) => {

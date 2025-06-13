@@ -81,10 +81,8 @@ const Dashboard = () => {
   ];
 
   const statusOptions = [
-    'Under Review',
-    'Interview Scheduled',
-    'Hired',
-    'Rejected'
+    'active',
+    'closed'
   ];
 
   // Filter and sort applications
