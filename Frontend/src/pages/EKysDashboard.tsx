@@ -1,22 +1,22 @@
 import React, { useState } from "react";
-import AppLayout from "../components/layouts/AppLayout";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import AppLayout from "@/components/layouts/AppLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle, XCircle, AlertCircle, Upload, Shield, FileText, Plus, Download, Eye } from "lucide-react";
 import { toast } from "sonner";
 
-// Digi API Configuration
-// Replace these with your actual API credentials for production
+// Digi KYC API Configuration
+// Your actual API credentials for Digi KYC integration
 const DIGI_API_CONFIG = {
   BASE_URL: 'https://ext.digio.in:444', // Will change to https://api.digio.in for production
-  CLIENT_ID: 'YOUR_CLIENT_ID_HERE',
-  CLIENT_SECRET: 'YOUR_CLIENT_SECRET_HERE'
+  CLIENT_ID: 'ACK250605191204397ZAQFFPCVDRQ4E3',
+  CLIENT_SECRET: '549MVOVHLMUF8F6S5FNQ6HNV3AAKTQ3D'
 };
 
 interface Document {
@@ -95,7 +95,7 @@ const EKysDashboard = () => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Digi KYC API Integration
+  // Digi KYC API Integration with your credentials
   const initiateDigiKyc = async () => {
     if (!kycData.identifier) {
       toast.error("Please provide email or mobile number.");
@@ -104,6 +104,8 @@ const EKysDashboard = () => {
 
     setIsProcessing(true);
     try {
+      console.log("Initiating KYC with Client ID:", DIGI_API_CONFIG.CLIENT_ID);
+      
       const response = await fetch(`${DIGI_API_CONFIG.BASE_URL}/client/kyc/v2/request/with_template`, {
         method: 'POST',
         headers: {
@@ -148,9 +150,11 @@ const EKysDashboard = () => {
     }
   };
 
-  // Check KYC Status
+  // Check KYC Status with your credentials
   const checkKycStatus = async (kycId: string) => {
     try {
+      console.log("Checking KYC status for ID:", kycId);
+      
       const response = await fetch(`${DIGI_API_CONFIG.BASE_URL}/client/kyc/v2/${kycId}/response`, {
         method: 'POST',
         headers: {
@@ -178,7 +182,7 @@ const EKysDashboard = () => {
     }
   };
 
-  // Download Document
+  // Download Document with your credentials
   const downloadDocument = async (downloadUrl: string, fileName: string) => {
     try {
       const response = await fetch(downloadUrl, {
@@ -216,7 +220,7 @@ const EKysDashboard = () => {
       studentName: "Alex Johnson",
       documentType: newTicket.documentType,
       status: "pending",
-      uploadedFile: newTicket.uploadedFile ?? undefined,
+      uploadedFile: newTicket.uploadedFile,
       created: new Date().toISOString().split('T')[0],
       description: newTicket.description
     };
@@ -365,6 +369,8 @@ const EKysDashboard = () => {
                     <div className="flex gap-2">
                       {doc.kycId && (
                         <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => checkKycStatus(doc.kycId!)}
                         >
                           <Eye className="h-4 w-4" />
@@ -372,6 +378,8 @@ const EKysDashboard = () => {
                       )}
                       {doc.downloadUrl && (
                         <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => downloadDocument(doc.downloadUrl!, doc.name)}
                         >
                           <Download className="h-4 w-4" />
@@ -443,7 +451,7 @@ const EKysDashboard = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setIsKycDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setIsKycDialogOpen(false)}>Cancel</Button>
             <Button 
               onClick={initiateDigiKyc}
               disabled={!kycData.identifier || isProcessing}
@@ -493,6 +501,7 @@ const EKysDashboard = () => {
                   className="hidden"
                 />
                 <Button 
+                  variant="outline" 
                   onClick={() => document.getElementById('file-upload')?.click()}
                   className="flex items-center gap-2"
                 >
@@ -517,7 +526,7 @@ const EKysDashboard = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setIsCreateTicketOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setIsCreateTicketOpen(false)}>Cancel</Button>
             <Button 
               onClick={handleCreateTicket}
               disabled={!newTicket.documentType || !newTicket.description}
