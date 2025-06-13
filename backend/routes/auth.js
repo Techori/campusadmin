@@ -153,14 +153,13 @@ router.post('/company-admin', async (req, res) => {
       { 
         id: company._id,
         type: 'company',
-        role: 'company_admin'
+        role: 'company_owner'
       },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
     // Verify the token immediately after creation
-    verifyToken(token);
 
     // Set token in HTTP-only cookie
     res.cookie('token', token, {
@@ -174,7 +173,7 @@ router.post('/company-admin', async (req, res) => {
       _id: company._id,
       name: company.name,
       email: company.contactEmail,
-      role: 'company_admin',
+      role: 'company_owner',
       loginType: 'company'
     });
   } catch (error) {

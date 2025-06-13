@@ -11,6 +11,7 @@ const verifyToken = (token) => {
 };
 
 // Middleware to check if user is authenticated via JWT in cookies
+
 const isCollegeAuthenticated = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
@@ -18,9 +19,13 @@ const isCollegeAuthenticated = (req, res, next) => {
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.type !== 'college') {
+      return res.status(403).json({ error: 'Access denied. College users only.' });
+    }
     req.user = decoded;
     next();
   } catch (error) { 
+    console.error('College authentication failed:', error.message);
     return res.status(401).json({ error: 'Unauthorized Access' });
   }
 };
@@ -42,9 +47,13 @@ const isCompanyAuthenticated = (req, res, next) => {
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.type !== 'company' && decoded.type !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Company users only.' });
+    }
     req.user = decoded;
     next();
   } catch (error) {
+    console.error('Company authentication failed:', error.message);
     return res.status(401).json({ error: 'Invalid token' });
   }
 };
@@ -86,5 +95,5 @@ module.exports = {
   isCompanyAuthenticated,
   isCompanyAdmin,
   isCompanyHR,
-  isCompanyOwner,
+  isCompanyOwner
 }; 
