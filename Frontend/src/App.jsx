@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 
@@ -17,8 +17,8 @@ import PlacementAnalysis from "./pages/PlacementAnalysis";
 import EKysDashboard from "./pages/EKysDashboard";
 import Sales from "./pages/Sales";
 import NotFound from "./pages/NotFound";
-import Signup from "../src/(auth)/signup"; 
-import SignIn from "../src/(auth)/signin"; 
+import Signup from "../src/(auth)/signup";
+import SignIn from "../src/(auth)/signin";
 
 import DashboardCompany from './company_components/CompanyDashboard';
 import CollegeDashboard from './college_components/CollegeDashboard';
@@ -43,13 +43,12 @@ import CollegePlacementAnalysis from './college_components/PlacementAnalysis';
 import CompanySupport from './company_components/Support';
 import CompanyPlacementAnalysis from './company_components/PlacementAnalysis';
 
-
 // Landing page component
 import Index_Website from "./pages/Index_Website";
 import Contact from "./pages/Contact";
 
-// Layout for authenticated pages
-const AppLayout = ({ user, onLogout, sidebarOpen, toggleSidebar }) => {
+// Layout for authenticated student pages (with sidebar)
+const StudentLayout = ({ user, onLogout, sidebarOpen, toggleSidebar }) => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -98,176 +97,91 @@ const AppLayout = ({ user, onLogout, sidebarOpen, toggleSidebar }) => {
   );
 };
 
-// Route for protected pages
-// const ProtectedRoute = ({ isAuthenticated, children }) => {
-//   // if (loading) {
-//   //   return <div>Loading...</div>;
-//   // }
-//   if (!isAuthenticated) {
-//     return <Navigate to="/website" replace />;
-//   }
-//   return children;
-// };
-
-
-// Route for auth pages (login/signup) when not authenticated
-// const AuthRoute = ({ isAuthenticated, children }) => {
-//   if (isAuthenticated) {
-//     return <Navigate to="/" replace />;
-//   }
-//   return children;
-// };
-
 const App = () => {
-  //  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Sidebar and auth state for demo; you should connect your real auth logic here
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
   // const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // const [user, setUser] = useState(null);
   // const [loading, setLoading] = useState(true);
 
-  // Check authentication status on app load (cookie/session-based)
-  // useEffect(() => {
-  //   const checkAuthStatus = async () => {
-  //     try {
-  //       // Make a request to a backend route that requires authentication
-  //       const res = await fetch('https://campusadmin.onrender.com/api/dashboard', {
-  //         credentials: 'include',
-  //       });
-  //       if (res.ok) {
-  //         // Authenticated, optionally extract user info from response
-  //         const data = await res.json();
-  //         // setIsAuthenticated(true);
-  //         setUser(data.student || {});
-  //       } else {
-  //         // setIsAuthenticated(false);
-  //         setUser(null);
-  //       }
-  //     } catch {
-  //       // setIsAuthenticated(false);
-  //       setUser(null);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   checkAuthStatus();
-  // }, []);
+  // Demo: Set a fake user for sidebar and header
+  useEffect(() => {
+    setUser({ name: "Student User", email: "student@email.com" });
+  }, []);
 
-  // const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  // Handle successful login/signup
-  // const handleAuthSuccess = (userData) => {
-  //   if (userData?.studentId) localStorage.setItem('studentId', userData.studentId);
-  //   setIsAuthenticated(true);
-  //   setUser(userData.user || userData);
-  // };
-
-  // Handle logout
-  // const handleLogout = async () => {
-  //   try {
-  //     await fetch('https://campusadmin.onrender.com/api/auth/logout', {
-  //       method: 'POST',
-  //       credentials: 'include',
-  //     });
-  //   } catch {
-  //     // Ignore logout errors
-  //   }
-  //   localStorage.removeItem('studentId');
-  //   setIsAuthenticated(false);
-  //   setUser(null);
-  // };
-
-  // Show loading spinner while checking auth status
-  // if (loading) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-  //       <div className="text-center">
-  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-  //         <p className="mt-4 text-gray-600">Loading...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // Only ONE Router in main.jsx/index.jsx! Not here.
+  const handleLogout = () => {
+    // Implement your logout logic
+    setUser(null);
+    // setIsAuthenticated(false);
+    // localStorage.removeItem('studentId');
+  };
 
   return (
     <Routes>
-      {/* Auth page (handles both login & signup) */}
-       {/* <Route
-        path="/website"
-        element={
-          <AuthRoute isAuthenticated={isAuthenticated}>
-            <AuthPage onAuthSuccess={handleAuthSuccess} />
-          </AuthRoute>
-        }
-      /> */}
-
-      {/* Protected routes */}
+      {/* Student section with sidebar on ALL relevant pages */}
       <Route
-        // path="/"
-        // element={
-        //   <ProtectedRoute isAuthenticated={isAuthenticated}>
-        //     <AppLayout
-        //       user={user}
-        //       onLogout={handleLogout}
-        //       sidebarOpen={sidebarOpen}
-        //       toggleSidebar={toggleSidebar}
-        //     />
-        //   </ProtectedRoute>
-        // }
+        element={
+          <StudentLayout
+            user={user}
+            onLogout={handleLogout}
+            sidebarOpen={sidebarOpen}
+            toggleSidebar={toggleSidebar}
+          />
+        }
       >
-        {/* <Route index element={<Dashboard user={user} />} /> */}
-        <Route path="/*" element={<Index_Website />} />
-        <Route path="/login_panel" element={<Login />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="jobs" element={<Jobs />} />
-        <Route path="applications" element={<Applications />} />
-        <Route path="interviews" element={<Interviews />} />
-        <Route path="feedback" element={<FeedbackCenter />} />
-        <Route path="portfolio" element={<AIPortfolioSection />} />
-        {/* Sales and Support pages */}
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<SignIn />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/placement-analysis" element={<PlacementAnalysis />} />
-        <Route path="/kyc-dashboard" element={<EKysDashboard />} />
-        <Route path="/sales" element={<Sales />} />
-
-        {/* College and Compay */}
-        <Route path="/student-login" element={<AuthPage />} /> {/* Updated to use AuthPage */}
-        <Route path="/college-login" element={<CollegeLogin />} />
-        <Route path="/company-login" element={<CompanyLogin />} />
-        <Route path="/sales-login" element={<SalesLogin />} />
-
-        {/* Company Dashboard Routes */}
-        <Route path="/company/:companyId/dashboard" element={<DashboardCompany />} />
-        <Route path="/company/:companyId/post-job" element={<PostJobForm />} />
-        <Route path="/company/:companyId/scheduled-interviews" element={<ScheduledInterviews />} />
-        <Route path="/company/:companyId/applications" element={<ViewApplications />} />
-        <Route path="/company/:companyId/support" element={<CompanySupport />} />
-        <Route path="/company/:companyId/placement-analysis" element={<CompanyPlacementAnalysis />} />
-        <Route path="/company/:companyId/employees" element={<ManageEmployees />} />
-
-        {/* College Dashboard Routes */}
-        <Route path="/college/:collegeId/dashboard" element={<CollegeDashboard />} />
-        <Route path="/college/:collegeId/view-jobs" element={<ViewJobs />} />
-        <Route path="/college/:collegeId/scheduled-applications" element={<ScheduledApplications />} />
-        <Route path="/college/:collegeId/add-students" element={<AddStudents />} />
-        <Route path="/college/:collegeId/analytics" element={<Analytics />} />
-        <Route path="/college/:collegeId/support" element={<CollegeSupport />} />
-        <Route path="/college/:collegeId/placement-analysis" element={<CollegePlacementAnalysis />} />
-
-        {/* Profile Routes */}
-        <Route path="/student/:studentId" element={<StudentProfile />} />
-        <Route path="/college/:collegeId/student/:studentId" element={<CollegeProfile />} />
-
-
-        {/* Landing website */}
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/applications" element={<Applications />} />
+        <Route path="/interviews" element={<Interviews />} />
+        <Route path="/feedback" element={<FeedbackCenter />} />
+        <Route path="/portfolio" element={<AIPortfolioSection />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/chatbot" element={<chatbot />} />
+        {/* add other student routes here */}
       </Route>
 
-      {/* Catch all: redirect to dashboard or auth */}
-      {/* <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/auth"} replace />} /> */}
+      {/* Public and other routes (no sidebar) */}
+      <Route path="/" element={<Index_Website />} />
+      <Route path="/login_panel" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<SignIn />} />
+      <Route path="/support" element={<Support />} />
+      <Route path="/placement-analysis" element={<PlacementAnalysis />} />
+      <Route path="/kyc-dashboard" element={<EKysDashboard />} />
+      <Route path="/sales" element={<Sales />} />
+      <Route path="/contact" element={<Contact />} />
+
+      {/* Company Dashboard Routes */}
+      <Route path="/company/:companyId/dashboard" element={<DashboardCompany />} />
+      <Route path="/company/:companyId/post-job" element={<PostJobForm />} />
+      <Route path="/company/:companyId/scheduled-interviews" element={<ScheduledInterviews />} />
+      <Route path="/company/:companyId/applications" element={<ViewApplications />} />
+      <Route path="/company/:companyId/support" element={<CompanySupport />} />
+      <Route path="/company/:companyId/placement-analysis" element={<CompanyPlacementAnalysis />} />
+      <Route path="/company/:companyId/employees" element={<ManageEmployees />} />
+
+      {/* College Dashboard Routes */}
+      <Route path="/college/:collegeId/dashboard" element={<CollegeDashboard />} />
+      <Route path="/college/:collegeId/view-jobs" element={<ViewJobs />} />
+      <Route path="/college/:collegeId/scheduled-applications" element={<ScheduledApplications />} />
+      <Route path="/college/:collegeId/add-students" element={<AddStudents />} />
+      <Route path="/college/:collegeId/analytics" element={<Analytics />} />
+      <Route path="/college/:collegeId/support" element={<CollegeSupport />} />
+      <Route path="/college/:collegeId/placement-analysis" element={<CollegePlacementAnalysis />} />
+
+      {/* Profile Routes */}
+      <Route path="/student/:studentId" element={<StudentProfile />} />
+      <Route path="/college/:collegeId/student/:studentId" element={<CollegeProfile />} />
+
+      <Route path="/college-login" element={<CollegeLogin />} />
+      <Route path="/company-login" element={<CompanyLogin />} />
+      <Route path="/sales-login" element={<SalesLogin />} />
+
+      {/* Not Found */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

@@ -2,6 +2,7 @@ const Job = require('../models/Job');
 const Application = require('../models/Application');
 const Feedback = require('../models/Feedback');
 const Student = require('../models/Student');
+const Notification = require('../models/Notificationstu'); 
 
 exports.getDashboardData = async (req, res) => {
   try {
@@ -50,10 +51,12 @@ exports.getDashboardData = async (req, res) => {
       if (count > 0) applicationsOverview.push({ status, count, color });
     }
 
-    // Notifications (stub, you can replace with real notifications)
-    const notificationsList = [
-      { date: new Date().toLocaleDateString(), text: "Welcome to your dashboard!" }
-    ];
+    // ==== REAL NOTIFICATIONS ====
+    // Fetch the latest 10 notifications for this student
+    const notificationsList = await Notification.find({ student: userId })
+      .sort({ date: -1 })
+      .limit(10)
+      .lean();
 
     // Recent feedback (ensure your Feedback model has student, company, title, rating, message/feedback, date)
     const recentFeedback = await Feedback.find({ student: userId })
@@ -83,17 +86,40 @@ exports.getDashboardData = async (req, res) => {
     // Student basic info
     const student = await Student.findById(userId).lean();
 
-    // Profile completion logic
+    // ==== PROFILE COMPLETION (INLINE & EXTENSIBLE) ====
     let profileCompletion = 0;
-    if (student) {
-      if (student.name) profileCompletion += 20;
-      if (student.email) profileCompletion += 20;
-      if ((student.programmingLanguages && student.programmingLanguages.length) || (student.skills && student.skills.length)) profileCompletion += 20;
-      if (student.resume) profileCompletion += 20;
-      if ((student.experience && student.experience.length) || (student.workExperience && student.workExperience.length)) profileCompletion += 20;
-      if (profileCompletion > 100) profileCompletion = 100;
-    }
+if (student) {
+  // Each field gets 10 points. Adjust/add fields and weights as you see fit.
+  const fields = [
+    { key: 'name', weight: 8, isComplete: s => !!s.name },
+    { key: 'email', weight: 8, isComplete: s => !!s.email },
+    { key: 'phone', weight: 8, isComplete: s => !!s.phone },
+    { key: 'profileImage', weight: 8, isComplete: s => !!s.profileImage },
+    { key: 'resume', weight: 8, isComplete: s => !!s.resume },
+    { key: 'skills', weight: 8, isComplete: s => Array.isArray(s.skills) && s.skills.length > 0 },
+    { key: 'programmingLanguages', weight: 8, isComplete: s => Array.isArray(s.programmingLanguages) && s.programmingLanguages.length > 0 },
+    { key: 'projects', weight: 8, isComplete: s => Array.isArray(s.projects) && s.projects.length > 0 },
+    { key: 'achievements', weight: 8, isComplete: s => Array.isArray(s.achievements) && s.achievements.length > 0 },
+    { key: 'certifications', weight: 8, isComplete: s => Array.isArray(s.certifications) && s.certifications.length > 0 },
+    // You can also add social/profile links for further completion
+    { key: 'githubUrl', weight: 4, isComplete: s => !!s.githubUrl },
+    { key: 'linkedinUrl', weight: 4, isComplete: s => !!s.linkedinUrl },
+    { key: 'portfolioUrl', weight: 4, isComplete: s => !!s.portfolioUrl },
+    // Optionally add more, e.g. dateOfBirth, location, department, etc.
+  ];
 
+  const totalWeight = fields.reduce((sum, f) => sum + f.weight, 0);
+
+  let score = 0;
+  for (const field of fields) {
+    if (field.isComplete(student)) {
+      score += field.weight;
+    }
+  }
+
+  profileCompletion = Math.round((score / totalWeight) * 100);
+  if (profileCompletion > 100) profileCompletion = 100;
+}
     res.json({
       student: student ? { name: student.name, email: student.email } : {},
       profileCompletion,
@@ -114,4 +140,4 @@ exports.getDashboardData = async (req, res) => {
     console.error('Dashboard error:', err.message);
     res.status(500).json({ error: 'Dashboard data fetch failed' });
   }
-}; 
+};

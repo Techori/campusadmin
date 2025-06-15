@@ -40,7 +40,7 @@ const Sidebar = ({
     { icon: Calendar, label: 'Interview Schedule', path: '/interviews' },
     { icon: MessageSquare, label: 'Feedback', path: '/feedback' },
     { icon: Sparkles, label: 'AI Portfolio', path: '/portfolio' },
-    { icon: Bot, label: 'Support Chat', path: '/support' }, // Fixed path to match App.jsx
+    { icon: Bot, label: 'Support Chat', path: '/chatbot' }, // Fixed path to match App.jsx
   ];
 
   // Fallbacks for user info, omit initials if not present
