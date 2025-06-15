@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import Sidebar from './Sidebar';
 import {
   UserCircle, FileText, Star, Bell, TrendingUp, Calendar, MessageSquare, Clock,
   Target, Award, Users, Eye, CheckCircle, AlertCircle, XCircle, PauseCircle,
-  Send, ChevronRight, ShieldAlert, LayoutDashboard
+  Send, ChevronRight, ShieldAlert
 } from "lucide-react";
 
 // Safe fetch helper
@@ -245,17 +244,7 @@ const Dashboard = () => {
   // }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar
-        user={{
-        initials: student?.name?.[0]?.toUpperCase() || '',
-        name: student?.name || 'Student',
-        role: student?.role || 'Student'
-      }}
-        sectionLabel="CAMPUS SERVICES"
-      />
-      {/* Main Content */}
-      <div className="flex-1">
+    <div className="flex-1">
       {/* Header ---------------------- */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700" />
@@ -274,7 +263,6 @@ const Dashboard = () => {
                   Hey {student?.name || 'there'}! 👋
                 </h1>
                 <p className="text-xl text-blue-100 mb-1">Ready to land your dream job?</p>
-              
               </div>
               {/* Notification Bell and Verification Badge/Button */}
               <div className="flex flex-col sm:flex-row gap-4 items-center relative">
@@ -494,7 +482,6 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-      </div>
       </div>
     </div>
   );
