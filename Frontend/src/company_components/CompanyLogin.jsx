@@ -97,11 +97,12 @@ const CompanyLogin = () => {
 
     try {
       const response = await axios.post(`${apiUrl}/api/auth/company-admin`, formData);
-      const { _id, name, role } = response.data;
+      const { _id, name, role, token } = response.data;
 
       localStorage.setItem('companyId', _id);
       localStorage.setItem('companyName', name);
       localStorage.setItem('userRole', role);
+      localStorage.setItem('token', token); // Store JWT token
 
       navigate(`/company/${_id}/dashboard`);
     } catch (err) {
@@ -705,4 +706,4 @@ const inputStyle = {
   transition: 'border-color 0.2s'
 };
 
-export default CompanyLogin; 
+export default CompanyLogin;

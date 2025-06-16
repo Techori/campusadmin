@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs'); // or 'bcrypt' depending on your project
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 const College = require('../models/College');
 const Company = require('../models/Company');
@@ -70,17 +71,40 @@ router.post('/company-admin', async (req, res) => {
       return res.status(404).json({ error: 'Company not found' });
     }
 
-      return res.json({
-        _id: company._id,
-        name: company.name,
-        email: company.contactEmail,
-        role: employee.type,
-        employeeId: employee._id,
-        employeeName: employee.name,
-        employeeEmail: employee.email,
-        employeeType: employee.type,
-        loginType: 'employee'
-      });
+      // Create JWT payload
+      const payload = {
+        user: {
+          id: company._id,
+          role: employee.type,
+          email: employee.email
+        }
+      };
+
+      // Sign and return JWT token
+      jwt.sign(
+        payload,
+        process.env.SESSION_SECRET,
+        { expiresIn: 360000 }, // 100 hours
+        (err, token) => {
+          if (err) {
+            console.error('Token generation error:', err);
+            throw err;
+          }
+          console.log('Token generated successfully for employee:', employee.email);
+          return res.json({
+            _id: company._id,
+            name: company.name,
+            email: company.contactEmail,
+            role: employee.type,
+            employeeId: employee._id,
+            employeeName: employee.name,
+            employeeEmail: employee.email,
+            employeeType: employee.type,
+            loginType: 'employee',
+            token: token
+          });
+        }
+      );
     }
 
     // If no employee found, try company login
@@ -99,13 +123,37 @@ router.post('/company-admin', async (req, res) => {
     }
 
     console.log('Company admin (direct) verified successfully');
-    res.json({
-      _id: company._id,
-      name: company.name,
-      email: company.contactEmail,
-      role: 'company_admin',
-      loginType: 'company'
-    });
+    
+    // Create JWT payload
+    const payload = {
+      user: {
+        id: company._id,
+        role: 'company_admin',
+        email: company.contactEmail
+      }
+    };
+
+    // Sign and return JWT token
+    jwt.sign(
+      payload,
+      process.env.SESSION_SECRET,
+      { expiresIn: 360000 }, // 100 hours
+      (err, token) => {
+        if (err) {
+          console.error('Token generation error:', err);
+          throw err;
+        }
+        console.log('Token generated successfully for company:', company.contactEmail);
+        res.json({
+          _id: company._id,
+          name: company.name,
+          email: company.contactEmail,
+          role: 'company_admin',
+          loginType: 'company',
+          token: token
+        });
+      }
+    );
   } catch (error) {
     console.error('Error verifying company admin:', error);
     res.status(500).json({ error: 'Error verifying credentials' });

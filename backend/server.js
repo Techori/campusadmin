@@ -14,6 +14,7 @@ const feedbackRoutes = require('./routes/feedbackRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const studentMatchingRoutes = require('./routes/studentMatchingRoutes');
 
 // College and Company models
 const CollegeStudent = require('./models/collegeStudent.model');
@@ -81,7 +82,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
   optionsSuccessStatus: 200,
 }));
 console.log('CORS Allowed Origins:', allowedOrigins);
@@ -102,7 +103,7 @@ mongoose.connect(process.env.MONGODB_URI, {
     minute: '2-digit',
     hour12: true
   });
-  console.log(`Connected to Database: ${process.env.MONGODB_URI} | ${formattedDate}`);
+  console.log(`Connected to Database: ${process.env.MONGODB_URI} | ${formattedDate} | ${process.env.MONGODB_URI}`);
 }).catch((err) => {
   console.error('MongoDB connection error:', err);
   process.exit(1); // Exit process if DB connection fails
@@ -160,6 +161,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/student-matching', studentMatchingRoutes);
 
 //Raj Sir part
 app.use('/api/student', require('./routes/studentRegister'));
@@ -220,4 +222,4 @@ app.listen(PORT, () => {
 
 // Routes (Sales and Support)
 app.use('/api/v1/user', require('./routes/user')); // Fixed path by adding leading '/'
-app.use('/api/v1/placement', require('./routes/placement')); // Fixed path  
+app.use('/api/v1/placement', require('./routes/placement')); // Fixed path

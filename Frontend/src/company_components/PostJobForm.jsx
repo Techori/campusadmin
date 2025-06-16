@@ -7,6 +7,7 @@ import { CSSTransition } from 'react-transition-group';
 import './ScheduledInterviews.css';
 import SearchBar from '../SearchBar';
 import { formatDistanceToNow } from 'date-fns';
+import MatchingStudents from './MatchingStudents';
 const apiUrl = import.meta.env.VITE_API_URL;
 const PostJobForm = () => {
   const { companyId } = useParams();
@@ -1089,6 +1090,17 @@ const PostJobForm = () => {
                                 )) : <li>N/A</li>}
                               </ul>
                             </div>
+                            
+                            {/* Matching Students Component */}
+                            {role.status === 'active' && (
+                              <div style={{ marginTop: '15px' }}>
+                                <MatchingStudents 
+                                  roleId={role._id} 
+                                  roleName={role.jobTitle} 
+                                  skills={role.skills} 
+                                />
+                              </div>
+                            )}
                             <div style={{
                               position: 'absolute',
                               top: 54,
@@ -1225,4 +1237,4 @@ const PostJobForm = () => {
   );
 };
 
-export default PostJobForm; 
+export default PostJobForm;
