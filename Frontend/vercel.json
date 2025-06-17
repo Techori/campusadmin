@@ -5,8 +5,8 @@
       "destination": "/index.html"
     }
   ],
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "cd Frontend && npm install && npm run build",
+  "outputDirectory": "Frontend/dist",
   "framework": "vite",
-  "installCommand": "npm install"
+  "installCommand": "cd Frontend && npm install"
 }
