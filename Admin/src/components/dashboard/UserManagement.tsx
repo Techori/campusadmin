@@ -27,6 +27,8 @@ export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [students, setStudents] = useState([]);
+  const [colleges, setColleges] = useState([]);
+  const [companies, setCompanies] = useState([]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -35,15 +37,55 @@ export function UserManagement() {
         if (res.data && Array.isArray(res.data.data)) {
           setStudents(res.data.data);
         } else {
-          console.warn("Unexpected response:", res.data);
           setStudents([]);
         }
       } catch (err) {
-        console.error("Error fetching students:", err);
+        setStudents([]);
+      }
+    };
+    const fetchColleges = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/admin/colleges");
+        if (res.data && Array.isArray(res.data.data)) {
+          setColleges(res.data.data);
+        } else {
+          setColleges([]);
+        }
+      } catch (err) {
+        setColleges([]);
+      }
+    };
+    const fetchCompanies = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/admin/companies");
+        if (res.data && Array.isArray(res.data.data)) {
+          setCompanies(res.data.data);
+        } else {
+          setCompanies([]);
+        }
+      } catch (err) {
+        setCompanies([]);
       }
     };
     fetchStudents();
+    fetchColleges();
+    fetchCompanies();
   }, []);
+
+  const filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredColleges = colleges.filter(college =>
+    college.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    college.contactEmail.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredCompanies = companies.filter(company =>
+    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.contactEmail.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const userStats = [
     {
@@ -173,7 +215,7 @@ export function UserManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {students.map((student) => (
+                  {filteredStudents.map((student) => (
                     <TableRow key={student._id}>
                       <TableCell>
                         <div>
@@ -209,6 +251,80 @@ export function UserManagement() {
                             <DropdownMenuItem className="text-red-600">
                               <X className="w-4 h-4 mr-2" />
                               Suspend
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="colleges" className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>College Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredColleges.map((college) => (
+                    <TableRow key={college._id}>
+                      <TableCell>{college.name}</TableCell>
+                      <TableCell>{college.contactEmail}</TableCell>
+                      <TableCell>{college.location || "-"}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Profile
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="companies" className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Company Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCompanies.map((company) => (
+                    <TableRow key={company._id}>
+                      <TableCell>{company.name}</TableCell>
+                      <TableCell>{company.contactEmail}</TableCell>
+                      <TableCell>{company.location || "-"}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Profile
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
