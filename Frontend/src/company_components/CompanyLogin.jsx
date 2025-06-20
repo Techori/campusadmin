@@ -4,7 +4,7 @@ import { FaBuilding } from 'react-icons/fa';
 import axios from 'axios';
 import './CompanyLogin.css';
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const initialRegisterData = {
   name: '',

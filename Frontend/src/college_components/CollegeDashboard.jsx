@@ -9,6 +9,7 @@ import axios from 'axios';
 axios.defaults.withCredentials = true;
 import calculateCampusScore from '../utils/calculateCampusScore';
 import { createStudentNotification, createCollegeNotification } from '../utils/notificationHelper';
+import Loader from '../components/Loader';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -86,14 +87,6 @@ const CollegeDashboard = () => {
         sidebarUser.initials = res.data.name.substring(0, 2).toUpperCase();
         sidebarUser.name = res.data.name;
         sidebarUser.role = 'College Admin';
-        
-        // Create a test notification for the college
-        createCollegeNotification(
-          collegeId,
-          'Dashboard Loaded',
-          'Welcome back to your dashboard! You can now manage your students and view analytics.',
-          'info'
-        );
       })
       .catch(err => {
         console.error('Error fetching college:', err);
@@ -327,26 +320,13 @@ const CollegeDashboard = () => {
       const response = await axios.patch(`${apiUrl}/api/students/verify`, {
         studentId: studentId
       });
-      
       // Update the student in the local state
       setStudents(students => students.map(s => 
         s._id === studentId 
           ? { ...s, isCollegeVerified: true }
           : s
       ));
-      
-      // Get student name for notification
-      const student = students.find(s => s._id === studentId);
-      if (student) {
-        // Create notification for the student
-        await createStudentNotification(
-          studentId,
-          'Student Verified',
-          `Your profile has been verified by ${college?.name || 'the college'}. You can now apply for jobs and internships.`,
-          'success'
-        );
-      }
-      
+      // Notification creation removed; handled by backend
     } catch (err) {
       console.error('Error verifying student:', err);
       alert('Error verifying student. Please try again.');
@@ -381,6 +361,18 @@ const CollegeDashboard = () => {
     // This ensures the dropdown shows all available departments including newly added ones
     setSelectedDepartment('All');
   };
+
+  if (loading && !college) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh' }}>
+        <Sidebar navItems={navItems} user={sidebarUser} sectionLabel="CAMPUS SERVICES" />
+        <div className='main-container' style={{ marginLeft: 260, padding: '2rem', width: '100%' }}>
+          <SearchBar onSettingsClick={() => setShowSettings(true)} />
+          <Loader message="Loading college dashboard..." />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -476,7 +468,7 @@ const CollegeDashboard = () => {
               </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>Loading students...</div>
+            <Loader message="Loading students..." />
           ) : error ? (
               <div style={{
               textAlign: 'center', 
@@ -537,7 +529,9 @@ const CollegeDashboard = () => {
                   textAlign: 'center',
                   minHeight: 200
                 }}>
-                  <div style={{ fontSize: 24, fontWeight: 700, marginBottom: '1rem' }}>Overall Campus Score</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, marginBottom: '1rem' }}>
+                    Overall Campus Score
+                  </div>
                   <div style={{ 
                     fontSize: 48, 
                     fontWeight: 800, 
@@ -553,7 +547,19 @@ const CollegeDashboard = () => {
                   }}>
                     {metrics.avgCampusScore}
                   </div>
-                  <div style={{ fontSize: 14, opacity: 0.9 }}>Average of all student scores</div>
+                  <div style={{ fontSize: 14, opacity: 0.9, marginBottom: '0.5rem' }}>
+                    Average of all student scores
+                  </div>
+                  <div style={{ 
+                    fontSize: 12, 
+                    opacity: 0.8, 
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '8px',
+                    marginTop: '0.5rem'
+                  }}>
+                    Based on: 40% Internships, 40% Interviews, 20% CGPA
+                  </div>
                 </div>
 
                 {/* Campus Comparison Card */}
@@ -873,7 +879,7 @@ const CollegeDashboard = () => {
                         <Pie
                           data={[
                             { name: 'Avg Campus Score', value: Number(metrics.avgCampusScore) },
-                            { name: 'Avg CGPA', value: Number(metrics.avgCGPA) * 10 },
+                            { name: 'Avg CGPA', value: Number(metrics.avgCGPA) },
                           ]}
                           dataKey="value"
                           nameKey="name"
@@ -885,14 +891,7 @@ const CollegeDashboard = () => {
                           <Cell fill="#6366f1" />
                           <Cell fill="#82ca9d" />
                         </Pie>
-                        <Tooltip 
-                          contentStyle={{ 
-                            background: '#fff',
-                            border: 'none',
-                            borderRadius: 8,
-                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-                          }}
-                        />
+                        <Tooltip />
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
@@ -987,7 +986,7 @@ const CollegeDashboard = () => {
                           minHeight: '60px',
                           maxHeight: '60px'
                         }}>
-                          <td style={{ padding: '12px 16px', height: '60px', verticalAlign: 'middle' }}>
+                          <td style={{ padding: '12px 16px', height: '60px', verticalAlign: 'middle', fontWeight:600, color:"blue" }}>
                               <Link to={`/college/${collegeId}/student/${student._id}`} className="student-name">{student.name}</Link>
                           </td>
                           <td style={{ padding: '12px 16px', height: '60px', verticalAlign: 'middle' }}>{student.department}</td>

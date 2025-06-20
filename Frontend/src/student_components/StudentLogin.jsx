@@ -23,7 +23,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../college_components/CollegeLogin.css';
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 // const apiUrl = 'http://localhost:5000';
 
 const initialRegisterData = {

@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Menu } from 'lucide-react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-
 
 // Import all page components
 import Sidebar from './components/Student/Sidebar';
@@ -12,6 +11,7 @@ import Applications from './components/Student/Applications';
 import Interviews from './components/Student/Interviews';
 import FeedbackCenter from './components/Student/Feedback';
 import AIPortfolioSection from './components/Student/AIProfilePortfolio';
+import Chatbot from './components/Student/chatbot';
 import { AuthPage } from './components/Student/AuthPage';
 import Support from "./pages/Support";
 import PlacementAnalysis from "./pages/PlacementAnalysis";
@@ -73,7 +73,7 @@ const AppLayout = ({ user, onLogout, sidebarOpen, toggleSidebar }) => {
             >
               <Menu size={24} />
             </button>
-            <h1 className="ml-4 text-lg font-semibold">Campus Portal</h1>
+            <h1 className="ml-4 text-lg font-semibold">Rojgar Setu</h1>
           </div>
           <div className="flex items-center space-x-2">
             {user && (
@@ -100,67 +100,71 @@ const AppLayout = ({ user, onLogout, sidebarOpen, toggleSidebar }) => {
 };
 
 // Route for protected pages
-const ProtectedRoute = ({ isAuthenticated, children }) => {
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
-  return children;
-};
+// const ProtectedRoute = ({ isAuthenticated, children }) => {
+//   // if (loading) {
+//   //   return <div>Loading...</div>;
+//   // }
+//   if (!isAuthenticated) {
+//     return <Navigate to="/website" replace />;
+//   }
+//   return children;
+// };
+
 
 // Route for auth pages (login/signup) when not authenticated
-const AuthRoute = ({ isAuthenticated, children }) => {
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-  return children;
-};
+// const AuthRoute = ({ isAuthenticated, children }) => {
+//   if (isAuthenticated) {
+//     return <Navigate to="/" replace />;
+//   }
+//   return children;
+// };
 
 const App = () => {
-  // const [sidebarOpen, setSidebarOpen] = useState(false);
+  //  const [sidebarOpen, setSidebarOpen] = useState(false);
   // const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // const [user, setUser] = useState(null);
+  // const [loading, setLoading] = useState(true);
 
   // Check authentication status on app load (cookie/session-based)
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        // Make a request to a backend route that requires authentication
-        const res = await fetch('https://campusadmin.onrender.com/api/dashboard', {
-          credentials: 'include',
-        });
-        if (res.ok) {
-          // Authenticated, optionally extract user info from response
-          const data = await res.json();
-          // setIsAuthenticated(true);
-          setUser(data.student || {});
-        } else {
-          // setIsAuthenticated(false);
-          setUser(null);
-        }
-      } catch {
-        // setIsAuthenticated(false);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkAuthStatus();
-  }, []);
+  // useEffect(() => {
+  //   const checkAuthStatus = async () => {
+  //     try {
+  //       // Make a request to a backend route that requires authentication
+  //       const res = await fetch('https://campusadmin.onrender.com/api/dashboard', {
+  //         credentials: 'include',
+  //       });
+  //       if (res.ok) {
+  //         // Authenticated, optionally extract user info from response
+  //         const data = await res.json();
+  //         // setIsAuthenticated(true);
+  //         setUser(data.student || {});
+  //       } else {
+  //         // setIsAuthenticated(false);
+  //         setUser(null);
+  //       }
+  //     } catch {
+  //       // setIsAuthenticated(false);
+  //       setUser(null);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   checkAuthStatus();
+  // }, []);
 
   // const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  // // Handle successful login/signup
+  // Handle successful login/signup
   // const handleAuthSuccess = (userData) => {
   //   if (userData?.studentId) localStorage.setItem('studentId', userData.studentId);
   //   setIsAuthenticated(true);
   //   setUser(userData.user || userData);
   // };
 
-  // // Handle logout
+  // Handle logout
   // const handleLogout = async () => {
   //   try {
-  //     await fetch('http://localhost:5000/api/auth/logout', {
+  //     await fetch('https://campusadmin.onrender.com/api/auth/logout', {
   //       method: 'POST',
   //       credentials: 'include',
   //     });
@@ -172,7 +176,7 @@ const App = () => {
   //   setUser(null);
   // };
 
-  // // Show loading spinner while checking auth status
+  // Show loading spinner while checking auth status
   // if (loading) {
   //   return (
   //     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -189,14 +193,14 @@ const App = () => {
   return (
     <Routes>
       {/* Auth page (handles both login & signup) */}
-      {/* <Route
-        path="/auth"
+       {/* <Route
+        path="/website"
         element={
           <AuthRoute isAuthenticated={isAuthenticated}>
             <AuthPage onAuthSuccess={handleAuthSuccess} />
           </AuthRoute>
         }
-      />
+      /> */}
 
       {/* Protected routes */}
       <Route
@@ -214,16 +218,16 @@ const App = () => {
       >
         {/* <Route index element={<Dashboard user={user} />} /> */}
         <Route path="/*" element={<Index_Website />} />
-
-
         <Route path="/login_panel" element={<Login />} />
-        <Route path="dashboard" element={<Dashboard user={user} />} />
-        <Route path="profile" element={<Profile user={user} />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="jobs" element={<Jobs />} />
         <Route path="applications" element={<Applications />} />
         <Route path="interviews" element={<Interviews />} />
         <Route path="feedback" element={<FeedbackCenter />} />
         <Route path="portfolio" element={<AIPortfolioSection />} />
+        <Route path="chat" element={<Chatbot />} />
+
         {/* Sales and Support pages */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<SignIn />} />
@@ -231,10 +235,9 @@ const App = () => {
         <Route path="/placement-analysis" element={<PlacementAnalysis />} />
         <Route path="/kyc-dashboard" element={<EKysDashboard />} />
         <Route path="/sales" element={<Sales />} />
-        <Route path="/profile" element={<Profile />} />
 
         {/* College and Compay */}
-        <Route path="/student-login" element={<StudentLogin />} />
+        <Route path="/student-login" element={<AuthPage />} /> {/* Updated to use AuthPage */}
         <Route path="/college-login" element={<CollegeLogin />} />
         <Route path="/company-login" element={<CompanyLogin />} />
         <Route path="/sales-login" element={<SalesLogin />} />
