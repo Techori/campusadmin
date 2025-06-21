@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,11 +26,29 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/admin/students");
+        if (res.data && Array.isArray(res.data.data)) {
+          setStudents(res.data.data);
+        } else {
+          console.warn("Unexpected response:", res.data);
+          setStudents([]);
+        }
+      } catch (err) {
+        console.error("Error fetching students:", err);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   const userStats = [
     {
       title: "Total Students",
-      value: "8,456",
+      value: students.length.toString(),
       change: "+234",
       icon: GraduationCap,
       color: "text-blue-600",
@@ -50,91 +69,14 @@ export function UserManagement() {
     },
     {
       title: "Pending Verifications",
-      value: "23",
+      value: students.filter(s => s.status === "pending").length.toString(),
       change: "-5",
       icon: UserCheck,
       color: "text-orange-600",
     },
   ];
 
-  const students = [
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      email: "rahul.sharma@email.com",
-      college: "Delhi University",
-      course: "Computer Science",
-      year: "Final Year",
-      status: "verified",
-      joinDate: "2024-01-15",
-    },
-    {
-      id: 2,
-      name: "Priya Patel",
-      email: "priya.patel@email.com",
-      college: "Mumbai University",
-      course: "Electronics",
-      year: "Third Year",
-      status: "pending",
-      joinDate: "2024-01-20",
-    },
-    {
-      id: 3,
-      name: "Amit Kumar",
-      email: "amit.kumar@email.com",
-      college: "IIT Delhi",
-      course: "Mechanical",
-      year: "Final Year",
-      status: "verified",
-      joinDate: "2024-01-10",
-    },
-  ];
-
-  const colleges = [
-    {
-      id: 1,
-      name: "Delhi University",
-      adminName: "Dr. Rajesh Gupta",
-      email: "admin@du.ac.in",
-      students: 1234,
-      status: "verified",
-      joinDate: "2023-08-15",
-    },
-    {
-      id: 2,
-      name: "Mumbai University",
-      adminName: "Prof. Sunita Shah",
-      email: "admin@mu.ac.in",
-      students: 2156,
-      status: "verified",
-      joinDate: "2023-09-01",
-    },
-  ];
-
-  const companies = [
-    {
-      id: 1,
-      name: "TechCorp Solutions",
-      contact: "HR Manager",
-      email: "hr@techcorp.com",
-      industry: "Technology",
-      employees: "1000+",
-      status: "verified",
-      joinDate: "2023-10-12",
-    },
-    {
-      id: 2,
-      name: "InnovateLabs",
-      contact: "Recruitment Head",
-      email: "careers@innovatelabs.com",
-      industry: "Software",
-      employees: "500-1000",
-      status: "pending",
-      joinDate: "2024-01-25",
-    },
-  ];
-
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status) => {
     switch (status) {
       case "verified":
         return <Badge className="bg-green-100 text-green-800">Verified</Badge>;
@@ -156,7 +98,6 @@ export function UserManagement() {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {userStats.map((stat) => (
           <Card key={stat.title}>
@@ -174,7 +115,6 @@ export function UserManagement() {
         ))}
       </div>
 
-      {/* User Management Tabs */}
       <Card>
         <CardHeader>
           <CardTitle>User Directory</CardTitle>
@@ -197,7 +137,6 @@ export function UserManagement() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -235,7 +174,7 @@ export function UserManagement() {
                 </TableHeader>
                 <TableBody>
                   {students.map((student) => (
-                    <TableRow key={student.id}>
+                    <TableRow key={student._id}>
                       <TableCell>
                         <div>
                           <p className="font-medium">{student.name}</p>
@@ -269,114 +208,6 @@ export function UserManagement() {
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-red-600">
                               <X className="w-4 h-4 mr-2" />
-                              Suspend
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-
-            <TabsContent value="colleges" className="space-y-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>College</TableHead>
-                    <TableHead>Admin</TableHead>
-                    <TableHead>Students</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Join Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {colleges.map((college) => (
-                    <TableRow key={college.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{college.name}</p>
-                          <p className="text-sm text-gray-500">{college.email}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{college.adminName}</TableCell>
-                      <TableCell>{college.students}</TableCell>
-                      <TableCell>{getStatusBadge(college.status)}</TableCell>
-                      <TableCell>{college.joinDate}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Check className="w-4 h-4 mr-2" />
-                              Verify
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
-                              <UserX className="w-4 h-4 mr-2" />
-                              Suspend
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-
-            <TabsContent value="companies" className="space-y-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Industry</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {companies.map((company) => (
-                    <TableRow key={company.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{company.name}</p>
-                          <p className="text-sm text-gray-500">{company.email}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{company.contact}</TableCell>
-                      <TableCell>{company.industry}</TableCell>
-                      <TableCell>{company.employees}</TableCell>
-                      <TableCell>{getStatusBadge(company.status)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Profile
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Check className="w-4 h-4 mr-2" />
-                              Verify
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
-                              <UserX className="w-4 h-4 mr-2" />
                               Suspend
                             </DropdownMenuItem>
                           </DropdownMenuContent>

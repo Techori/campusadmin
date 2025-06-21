@@ -31,6 +31,11 @@ const internshipsRoutes = require('./routes/internships');
 const supportRoutes = require('./routes/support');
 const studentMatchingRoutes = require('./routes/studentMatchingRoutes');
 
+
+   const { signIn } = require('./controllers/admin/authController');
+const studentAdminRoutes = require('./routes/admin/studentAdminRoutes');
+
+
 const bcrypt = require('bcrypt');
 
 const app = express();
@@ -63,6 +68,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://localhost:8080',
   'https://campusadmin-y4hh.vercel.app',
   'https://campusadmin.vercel.app',
   'https://www.rojgarsetu.org',
@@ -141,6 +147,12 @@ app.use('/api/support', supportRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+
+//admin
+app.use('/api/login', signIn)
+app.use('/api/admin', studentAdminRoutes);
+
 
 // Raj Sir part
 app.use('/api/student', studentRegisterRoutes);
