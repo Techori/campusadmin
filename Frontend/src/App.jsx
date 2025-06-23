@@ -242,6 +242,7 @@ const App = () => {
         <Route path="/placement-analysis" element={<PlacementAnalysis />} />
         <Route path="/kyc-dashboard" element={<EKysDashboard />} />
         <Route path="/sales" element={<Sales />} />
+        <Route path="/profile" element={<Profile />} />
 
         {/* College and Compay */}
         <Route path="/student-login" element={<AuthPage />} />
