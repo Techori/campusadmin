@@ -6,7 +6,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const session = require('express-session');
-
+const MongoStore = require('connect-mongo');
 
 // Route modules
 const authRoutes = require('./routes/authRoutes');
@@ -28,7 +28,7 @@ const collegesRoutes = require('./routes/colleges');
 const internshipsRoutes = require('./routes/internships');
 const supportRoutes = require('./routes/support');
 const studentMatchingRoutes = require('./routes/studentMatchingRoutes');
-
+const signup = require('./controllers/user/signup');
 
 
    const { signIn } = require('./controllers/admin/authController');
@@ -151,7 +151,7 @@ app.use('/api/notifications', notificationRoutes);
 //admin
 app.use('/api/login', signIn)
 app.use('/api/admin', studentAdminRoutes);
-
+app.use('/api/signup', signup);
 
 // Raj Sir part
 app.use('/api/student', studentRegisterRoutes);

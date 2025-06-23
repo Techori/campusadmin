@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  Filter
+  Filter,
+  Users
 } from "lucide-react";
 import "./SupportPanel.css";
 
@@ -40,6 +42,7 @@ export function SupportPanel() {
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [isLiveChatOpen, setIsLiveChatOpen] = useState(false);
+  const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
   const [newTicket, setNewTicket] = useState({
     subject: "",
     description: "",
@@ -50,6 +53,12 @@ export function SupportPanel() {
     to: "",
     subject: "",
     message: ""
+  });
+  const [newStaff, setNewStaff] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: ""
   });
 
   const supportStats = [
@@ -310,6 +319,29 @@ export function SupportPanel() {
       title: "System Alert",
       description: "System alert broadcast to all users",
     });
+  };
+
+  const handleAddStaff = async () => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/signup", {
+        firstName: newStaff.firstName,
+        lastName: newStaff.lastName,
+        email: newStaff.email,
+        password: newStaff.password
+      });
+      toast({
+        title: "Staff Added",
+        description: `Staff member ${newStaff.firstName} ${newStaff.lastName} added successfully`,
+      });
+      setNewStaff({ firstName: "", lastName: "", email: "", password: "" });
+      setIsAddStaffOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to add staff: ${error.response?.data?.message || error.message}`,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -752,6 +784,65 @@ export function SupportPanel() {
                 </DialogContent>
               </Dialog>
 
+              <Dialog open={isAddStaffOpen} onOpenChange={setIsAddStaffOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="action-button">
+                    <Users className="w-4 h-4 mr-2" />
+                    Add Staff
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="staff-dialog">
+                  <DialogHeader>
+                    <DialogTitle>Add New Staff</DialogTitle>
+                    <DialogDescription>Create a new staff account</DialogDescription>
+                  </DialogHeader>
+                  <div className="staff-form">
+                    <div className="form-field">
+                      <Label htmlFor="staff-firstname">First Name</Label>
+                      <Input
+                        id="staff-firstname"
+                        placeholder="Enter first name"
+                        value={newStaff.firstName}
+                        onChange={(e) => setNewStaff({ ...newStaff, firstName: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <Label htmlFor="staff-lastname">Last Name</Label>
+                      <Input
+                        id="staff-lastname"
+                        placeholder="Enter last name"
+                        value={newStaff.lastName}
+                        onChange={(e) => setNewStaff({ ...newStaff, lastName: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <Label htmlFor="staff-email">Email</Label>
+                      <Input
+                        id="staff-email"
+                        placeholder="staff@example.com"
+                        type="email"
+                        value={newStaff.email}
+                        onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <Label htmlFor="staff-password">Password</Label>
+                      <Input
+                        id="staff-password"
+                        placeholder="Enter password"
+                        type="password"
+                        value={newStaff.password}
+                        onChange={(e) => setNewStaff({ ...newStaff, password: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsAddStaffOpen(false)}>Cancel</Button>
+                    <Button onClick={handleAddStaff}>Add Staff</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
               <Button variant="outline" className="action-button" onClick={() => setIsEmailDialogOpen(true)}>
                 <Mail className="w-4 h-4 mr-2" />
                 Send Bulk Email
@@ -802,7 +893,6 @@ export function SupportPanel() {
         </div>
       </div>
 
-      {/* Ticket Detail Dialog */}
       <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
         <DialogContent className="ticket-detail-dialog">
           <DialogHeader>

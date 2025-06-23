@@ -1,4 +1,4 @@
-const Student = require('../../models/collegeStudent.model');
+const Student = require('../../models/Student');
 const College = require('../../models/College');
 const Company = require('../../models/Company');
 // GET all students
