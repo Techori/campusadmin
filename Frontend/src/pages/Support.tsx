@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layouts/AppLayout";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -10,6 +10,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Clock, MessageSquare, CheckCircle, AlertCircle, Plus, Upload, Search, Filter } from "lucide-react";
 import { toast } from "sonner";
+import axios from "axios";
 
 type Priority = "low" | "medium" | "high" | "urgent";
 type Status = "open" | "in-progress" | "resolved" | "closed";
@@ -28,42 +29,8 @@ interface SupportTicket {
 }
 
 const Support = () => {
-  const [tickets, setTickets] = useState<SupportTicket[]>([
-    {
-      id: "TICK-001",
-      title: "Login Issues with Student Portal",
-      description: "Unable to access student portal after password reset",
-      priority: "high",
-      status: "open",
-      category: "Technical",
-      created: "2024-01-20",
-      lastUpdated: "2024-01-20",
-      responses: 0
-    },
-    {
-      id: "TICK-002", 
-      title: "Grade Discrepancy in Mathematics",
-      description: "There seems to be an error in my final grade calculation",
-      priority: "medium",
-      status: "in-progress",
-      category: "Academic",
-      created: "2024-01-18",
-      lastUpdated: "2024-01-19",
-      responses: 2
-    },
-    {
-      id: "TICK-003",
-      title: "Library Access Card Not Working",
-      description: "My student ID card is not scanning at the library entrance",
-      priority: "low",
-      status: "resolved",
-      category: "Facilities",
-      created: "2024-01-15",
-      lastUpdated: "2024-01-17",
-      responses: 1
-    }
-  ]);
-
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
   const [newTicket, setNewTicket] = useState({
     title: "",
@@ -76,36 +43,72 @@ const Support = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
 
-  const handleCreateTicket = () => {
+  const fetchTickets = async () => {
+    setLoading(true);
+    try {
+      const userId = localStorage.getItem("collegeId");
+      console.log("Fetching tickets for userId:", userId); // Debug log
+      const res = await axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/support/tickets/${userId}`);
+      console.log("API response:", res.data); // Debug log
+      if (res.data.tickets) {
+        const mapped = res.data.tickets.map(ticket => ({
+          id: ticket.ticketId,
+          title: ticket.subject,
+          description: ticket.messages[0]?.message || "",
+          priority: ticket.priority,
+          status: ticket.status === 'in_progress' ? 'in-progress' : ticket.status,
+          category: ticket.category,
+          created: new Date(ticket.createdAt).toISOString().split('T')[0],
+          lastUpdated: new Date(ticket.updatedAt).toISOString().split('T')[0],
+          responses: (ticket.messages?.length || 1) - 1
+        }));
+        console.log("Mapped tickets:", mapped); // Debug log
+        setTickets(mapped);
+      } else {
+        setTickets([]);
+      }
+    } catch (err) {
+      toast.error("Failed to fetch tickets");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
+  const handleCreateTicket = async () => {
     if (!newTicket.title || !newTicket.description || !newTicket.category) {
       toast.error("Please fill in all required fields.");
       return;
     }
-
-    const ticket: SupportTicket = {
-      id: `TICK-${String(tickets.length + 1).padStart(3, '0')}`,
-      title: newTicket.title,
-      description: newTicket.description,
-      priority: newTicket.priority,
-      status: "open",
-      category: newTicket.category,
-      created: new Date().toISOString().split('T')[0],
-      lastUpdated: new Date().toISOString().split('T')[0],
-      responses: 0,
-      uploadedFile: newTicket.uploadedFile || undefined
-    };
-
-    setTickets([ticket, ...tickets]);
-    setIsCreateTicketOpen(false);
-    setNewTicket({
-      title: "",
-      description: "",
-      priority: "medium",
-      category: "",
-      uploadedFile: null
-    });
-
-    toast.success("Support ticket created successfully!");
+    try {
+      setLoading(true);
+      const userId = localStorage.getItem("collegeId");
+      const userType = "college";
+      console.log("Creating ticket for userId:", userId); // Debug log
+      const res = await axios.post(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/support/tickets`, {
+        userId,
+        userType,
+        subject: newTicket.title,
+        message: newTicket.description
+      });
+      console.log("Ticket creation response:", res.data); // Debug log
+      await fetchTickets();
+      setIsCreateTicketOpen(false);
+      setNewTicket({
+        title: "",
+        description: "",
+        priority: "medium",
+        category: "",
+        uploadedFile: null
+      });
+      toast.success("Support ticket created successfully!");
+    } catch (err) {
+      toast.error("Failed to create ticket");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
