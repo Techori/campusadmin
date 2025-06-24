@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,9 @@ import {
   Filter
 } from "lucide-react";
 import "./SupportPanel.css";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export function SupportPanel() {
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -51,6 +54,33 @@ export function SupportPanel() {
     subject: "",
     message: ""
   });
+  const [supportTickets, setSupportTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Get admin info from localStorage
+  let adminData = null;
+  try {
+    adminData = JSON.parse(localStorage.getItem('adminData'));
+  } catch (e) {}
+  const userId = adminData?._id || "";
+  const userType = adminData?.role?.toLowerCase() || "admin";
+
+  // Fetch tickets on mount (only if userId exists)
+  useEffect(() => {
+    if (!userId) return; // Guard: do not fetch if userId is missing
+    setLoading(true);
+    // Always use the userId in the URL, never call /api/support/tickets without it
+    axios.get(`${API_URL}/api/support/tickets/${userId}`)
+      .then(res => {
+        setSupportTickets(res.data.tickets || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError("Failed to load tickets");
+        setLoading(false);
+      });
+  }, [userId]);
 
   const supportStats = [
     {
@@ -84,57 +114,6 @@ export function SupportPanel() {
       icon: MessageSquare,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
-    },
-  ];
-
-  const supportTickets = [
-    {
-      id: "TKT-001",
-      user: "rahul.sharma@email.com",
-      userType: "Student",
-      subject: "Unable to upload resume",
-      priority: "high",
-      status: "open",
-      created: "2024-01-28 10:30 AM",
-      lastUpdate: "2024-01-28 11:15 AM",
-      assignedTo: "Support Agent 1",
-      description: "User is facing issues while uploading resume. Error message appears when trying to upload PDF files."
-    },
-    {
-      id: "TKT-002",
-      user: "hr@techcorp.com",
-      userType: "Company",
-      subject: "Job posting not visible",
-      priority: "medium",
-      status: "in_progress",
-      created: "2024-01-28 09:15 AM",
-      lastUpdate: "2024-01-28 10:45 AM",
-      assignedTo: "Support Agent 2",
-      description: "Company cannot see their job posting on the platform after submission."
-    },
-    {
-      id: "TKT-003",
-      user: "admin@university.edu",
-      userType: "College",
-      subject: "Student verification issues",
-      priority: "high",
-      status: "open",
-      created: "2024-01-28 08:45 AM",
-      lastUpdate: "2024-01-28 09:30 AM",
-      assignedTo: "Support Agent 1",
-      description: "Multiple students from the college are facing verification issues with their academic credentials."
-    },
-    {
-      id: "TKT-004",
-      user: "priya.patel@email.com",
-      userType: "Student",
-      subject: "Login authentication error",
-      priority: "low",
-      status: "resolved",
-      created: "2024-01-27 04:20 PM",
-      lastUpdate: "2024-01-28 08:15 AM",
-      assignedTo: "Support Agent 3",
-      description: "User was unable to login due to authentication errors. Issue resolved by password reset."
     },
   ];
 
@@ -174,12 +153,12 @@ export function SupportPanel() {
   ];
 
   const filteredTickets = supportTickets.filter((ticket) => {
-    const matchesSearch = ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         ticket.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         ticket.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (ticket.subject || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (ticket.userId || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (ticket.ticketId || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || ticket.status === statusFilter;
     const matchesPriority = priorityFilter === "all" || ticket.priority === priorityFilter;
-    const matchesUserType = userTypeFilter === "all" || ticket.userType === userTypeFilter;
+    const matchesUserType = userTypeFilter === "all" || (ticket.userType || "").toLowerCase() === userTypeFilter.toLowerCase();
     return matchesSearch && matchesStatus && matchesPriority && matchesUserType;
   });
 
@@ -244,13 +223,25 @@ export function SupportPanel() {
   };
 
   const handleCreateTicket = () => {
-    console.log("Creating ticket:", newTicket);
-    toast({
-      title: "Ticket Created",
-      description: `Ticket created successfully for ${newTicket.userEmail}`,
+    if (!newTicket.subject || !newTicket.description || !newTicket.userEmail) {
+      toast({ title: "Missing Fields", description: "Please fill all fields." });
+      return;
+    }
+    axios.post(`${API_URL}/api/support/tickets`, {
+      userId,
+      userType,
+      subject: newTicket.subject,
+      message: newTicket.description
+    })
+    .then(res => {
+      setSupportTickets([res.data.ticket, ...supportTickets]);
+      toast({ title: "Ticket Created", description: `Ticket created successfully for ${newTicket.userEmail}` });
+      setNewTicket({ subject: "", description: "", priority: "medium", userEmail: "" });
+      setIsCreateTicketOpen(false);
+    })
+    .catch(() => {
+      toast({ title: "Error", description: "Failed to create ticket", variant: "destructive" });
     });
-    setNewTicket({ subject: "", description: "", priority: "medium", userEmail: "" });
-    setIsCreateTicketOpen(false);
   };
 
   const handleSendEmail = () => {
@@ -463,11 +454,11 @@ export function SupportPanel() {
                         </TableRow>
                       ) : (
                         filteredTickets.map((ticket) => (
-                          <TableRow key={ticket.id} className="ticket-row">
-                            <TableCell className="ticket-id">{ticket.id}</TableCell>
+                          <TableRow key={ticket.ticketId} className="ticket-row">
+                            <TableCell className="ticket-id">{ticket.ticketId}</TableCell>
                             <TableCell>
                               <div className="user-cell">
-                                <p className="user-email">{ticket.user}</p>
+                                <p className="user-email">{ticket.userId}</p>
                                 <p className="user-type">{ticket.userType}</p>
                               </div>
                             </TableCell>
@@ -480,7 +471,7 @@ export function SupportPanel() {
                                 <Button size="sm" variant="outline" onClick={() => handleViewTicket(ticket)}>
                                   <Eye className="w-3 h-3" />
                                 </Button>
-                                <Select onValueChange={(value) => handleUpdateTicketStatus(ticket.id, value)}>
+                                <Select onValueChange={(value) => handleUpdateTicketStatus(ticket.ticketId, value)}>
                                   <SelectTrigger className="action-select">
                                     <Edit className="w-3 h-3" />
                                   </SelectTrigger>
@@ -501,12 +492,12 @@ export function SupportPanel() {
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Delete Ticket</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Are you sure you want to delete ticket {ticket.id}? This action cannot be undone.
+                                        Are you sure you want to delete ticket {ticket.ticketId}? This action cannot be undone.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleDeleteTicket(ticket.id)}>
+                                      <AlertDialogAction onClick={() => handleDeleteTicket(ticket.ticketId)}>
                                         Delete
                                       </AlertDialogAction>
                                     </AlertDialogFooter>
@@ -806,7 +797,7 @@ export function SupportPanel() {
       <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
         <DialogContent className="ticket-detail-dialog">
           <DialogHeader>
-            <DialogTitle>Ticket Details - {selectedTicket?.id}</DialogTitle>
+            <DialogTitle>Ticket Details - {selectedTicket?.ticketId}</DialogTitle>
             <DialogDescription>View and manage ticket information</DialogDescription>
           </DialogHeader>
           {selectedTicket && (
@@ -814,7 +805,7 @@ export function SupportPanel() {
               <div className="detail-grid">
                 <div className="detail-item">
                   <Label>User</Label>
-                  <p className="detail-value">{selectedTicket.user}</p>
+                  <p className="detail-value">{selectedTicket.userId}</p>
                 </div>
                 <div className="detail-item">
                   <Label>User Type</Label>
