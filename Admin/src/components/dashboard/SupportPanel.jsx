@@ -28,6 +28,9 @@ import {
   Filter
 } from "lucide-react";
 import "./SupportPanel.css";
+import axios from 'axios';
+
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export function SupportPanel() {
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -253,14 +256,22 @@ export function SupportPanel() {
     setIsCreateTicketOpen(false);
   };
 
-  const handleSendEmail = () => {
-    console.log("Sending email:", emailData);
-    toast({
-      title: "Email Sent",
-      description: `Email sent successfully to ${emailData.to}`,
-    });
-    setEmailData({ to: "", subject: "", message: "" });
-    setIsEmailDialogOpen(false);
+  const handleSendEmail = async () => {
+    try {
+      const response = await axios.post(`${apiUrl}/api/support/send-email`, emailData);
+      toast({
+        title: 'Email Sent',
+        description: `Email sent successfully to ${emailData.to}`,
+      });
+      setEmailData({ to: '', subject: '', message: '' });
+      setIsEmailDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Email Failed',
+        description: error.response?.data?.error || 'Failed to send email',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleJoinChat = (chatId) => {
