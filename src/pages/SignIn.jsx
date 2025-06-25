@@ -41,6 +41,9 @@ const SignIn = () => {
           <CardTitle className="text-2xl text-center">Sign In</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-col items-center mb-6">
+            <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-16 h-16 rounded-full border border-blue-200 shadow bg-white mb-2" />
+          </div>
           <form onSubmit={handleSignIn} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Email</label>

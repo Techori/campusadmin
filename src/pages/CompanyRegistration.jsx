@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,6 +79,10 @@ const CompanyRegistration = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
+        </div>
+
+        <div className="flex flex-col items-center mb-6">
+          <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-16 h-16 rounded-full border border-blue-200 shadow bg-white mb-2" />
         </div>
 
         <Card>

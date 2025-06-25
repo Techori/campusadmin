@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SearchDropdown from "../components/common/SearchDropdown";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -236,11 +238,35 @@ const Index = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center group">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent">
-                  Campus Connect
+                <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-12 h-12 rounded-full border-2 border-blue-200 shadow-md bg-white p-1 mr-2" />
+                <span className="flex flex-col items-start">
+                  <span
+                    style={{
+                      background: 'linear-gradient(to right, #0d47a1, #42a5f5)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      fontWeight: 700,
+                      fontSize: '1.35rem',
+                      fontFamily: 'Noto Sans, Arial, sans-serif',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    Rojgar Setu
+                  </span>
+                  <span
+                    style={{
+                      background: 'linear-gradient(to right, #0d47a1, #42a5f5)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      fontWeight: 600,
+                      fontSize: '1.05rem',
+                      fontFamily: 'Noto Sans Devanagari, Mangal, Arial, sans-serif',
+                      lineHeight: 1.1,
+                      marginTop: '-0.1rem',
+                    }}
+                  >
+                    रोज़गार सेतु
+                  </span>
                 </span>
               </div>
             </div>
@@ -278,14 +304,37 @@ const Index = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
+              <div className="flex flex-col items-center mb-4">
+                <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-20 h-20 rounded-full border-2 border-blue-200 shadow-md bg-white mb-2" />
+              </div>
               <div className="inline-flex items-center space-x-2 bg-blue-100 rounded-full px-4 py-2 mb-6">
                 <Zap className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-medium text-blue-700">India's #1 Career Platform</span>
               </div>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Find Your Dream
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
-                  Career Today
+              <h1 className="mb-6 leading-tight text-center">
+                <span
+                  className="block"
+                  style={{
+                    color: '#FF6F00',
+                    fontSize: '3.3rem', // slightly smaller, fits one line
+                    fontFamily: 'Noto Sans Devanagari, Mangal, Arial, sans-serif',
+                    fontWeight: 700,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  आत्मनिर्भर भारत का सेतु -
+                </span>
+                <span
+                  className="block"
+                  style={{
+                    color: '#388E3C',
+                    fontSize: '3.5rem', // larger than above
+                    fontFamily: 'Noto Sans Devanagari, Mangal, Arial, sans-serif',
+                    fontWeight: 800,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  रोज़गार सेतु
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
@@ -331,20 +380,26 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-            <div className="hidden lg:block animate-scale-in">
-              <div className="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600&h=400&fit=crop" 
-                  alt="Professional working" 
-                  className="rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg animate-bounce">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-sm font-medium">1M+ Success Stories</span>
-                  </div>
-                </div>
-              </div>
+            <div className="hidden lg:block animate-scale-in w-full max-w-xl mx-auto">
+              <Carousel opts={{ loop: true }} plugins={[Autoplay({ delay: 3000 })]} className="relative">
+                <CarouselContent>
+                  <CarouselItem>
+                    <img src="/images/Rojgar-setu-1.jpg" alt="Rojgar Setu 1" className="rounded-2xl shadow-2xl w-full object-cover" />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img src="/images/Rojgar-setu-2.jpg" alt="Rojgar Setu 2" className="rounded-2xl shadow-2xl w-full object-cover" />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img src="/images/Rojgar-setu-3.jpg" alt="Rojgar Setu 3" className="rounded-2xl shadow-2xl w-full object-cover" />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img src="/images/Rojgar-setu-4.jpg" alt="Rojgar Setu 4" className="rounded-2xl shadow-2xl w-full object-cover" />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img src="/images/Rojgar-setu-5.jpg" alt="Rojgar Setu 4" className="rounded-2xl shadow-2xl w-full object-cover" />
+                  </CarouselItem>
+                </CarouselContent>
+              </Carousel>
             </div>
           </div>
         </div>
@@ -362,7 +417,7 @@ const Index = () => {
             ].map((stat, index) => (
               <div key={index} className="text-center">
                 <div className={`w-12 h-12 bg-${stat.color}-100 rounded-full flex items-center justify-center mx-auto mb-3`}>
-                  <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
+                  <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-6 h-6" />
                 </div>
                 <div className={`text-3xl font-bold text-${stat.color}-600 mb-2`}>
                   {(stat.value / (stat.suffix.includes('M') ? 1000000 : 1000)).toFixed(0)}{stat.suffix}
@@ -399,7 +454,7 @@ const Index = () => {
               {
                 title: "For Colleges",
                 description: "Manage placements, track student progress, and partner with industry leaders seamlessly.",
-                icon: GraduationCap,
+                icon: () => <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-10 h-10" />,
                 color: "green",
                 features: ["Placement Management", "Analytics Dashboard", "Industry Partnerships"],
                 onClick: handleForColleges
@@ -416,7 +471,7 @@ const Index = () => {
               <Card key={index} className="group hover:shadow-2xl transition-all duration-300 cursor-pointer border-0 bg-white/80" onClick={service.onClick}>
                 <CardContent className="p-8 text-center">
                   <div className={`w-20 h-20 bg-gradient-to-br from-${service.color}-100 to-${service.color}-200 rounded-2xl flex items-center justify-center mx-auto mb-6`}>
-                    <service.icon className={`w-10 h-10 text-${service.color}-600`} />
+                    <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-10 h-10" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">{service.title}</h3>
                   <p className="text-gray-600 mb-6 leading-relaxed">
@@ -614,7 +669,7 @@ const Index = () => {
             <Card className="group hover:shadow-2xl transition-all duration-300 border-0 bg-white/80">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mb-6">
-                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                  <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Sales Inquiries</h3>
                 <p className="text-gray-600 mb-6 leading-relaxed">
@@ -644,7 +699,7 @@ const Index = () => {
             <Card className="group hover:shadow-2xl transition-all duration-300 border-0 bg-white/80">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-6">
-                  <Shield className="w-8 h-8 text-purple-600" />
+                  <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Customer Support</h3>
                 <p className="text-gray-600 mb-6 leading-relaxed">
@@ -718,10 +773,36 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
               <div className="flex items-center space-x-2 mb-6">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold">Campus Connect</span>
+                <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-8 h-8 rounded-full border border-blue-200 shadow bg-white mr-2" />
+                <span className="flex flex-col items-start">
+                  <span
+                    style={{
+                      background: 'linear-gradient(to right, #0d47a1, #42a5f5)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      fontWeight: 700,
+                      fontSize: '1.35rem',
+                      fontFamily: 'Noto Sans, Arial, sans-serif',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    Rojgar Setu
+                  </span>
+                  <span
+                    style={{
+                      background: 'linear-gradient(to right, #0d47a1, #42a5f5)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      fontWeight: 600,
+                      fontSize: '1.05rem',
+                      fontFamily: 'Noto Sans Devanagari, Mangal, Arial, sans-serif',
+                      lineHeight: 1.1,
+                      marginTop: '-0.1rem',
+                    }}
+                  >
+                    रोज़गार सेतु
+                  </span>
+                </span>
               </div>
               <p className="text-gray-400 text-sm mb-6 leading-relaxed">
                 India's leading career platform connecting students with unlimited opportunities and helping them build successful careers.
@@ -762,7 +843,7 @@ const Index = () => {
           </div>
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © 2024 Campus Connect. All rights reserved.
+              © 2025 Rojgar Setu. All rights reserved.
             </p>
             <p className="text-gray-400 text-sm mt-4 md:mt-0 flex items-center">
               Made with <Heart className="w-4 h-4 mx-1 text-red-500" /> for students across India

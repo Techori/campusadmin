@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Building2, GraduationCap, ArrowLeft } from 'lucide-react';
+import { Users, Building2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const GetStarted = () => {
@@ -57,7 +56,7 @@ const GetStarted = () => {
           <Card className="hover:shadow-lg transition-all cursor-pointer" onClick={() => navigate('/company-registration')}>
             <CardHeader className="text-center">
               <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <GraduationCap className="w-8 h-8 text-white" />
+                <img src="/images/favicon.png" alt="Rojgar Setu Logo" className="w-8 h-8" />
               </div>
               <CardTitle>I'm a Recruiter</CardTitle>
             </CardHeader>
