@@ -2,6 +2,8 @@ const Student = require('../../models/Student');
 const College = require('../../models/College');
 const Company = require('../../models/Company');
 const User = require('../../models/User'); 
+const SupportTicket = require('../../models/SupportTicket'); // Assuming this model exists
+const moment = require('moment'); // Ensure moment is installed and required
 
 // GET all students
 exports.getAllStudents = async (req, res) => {
@@ -78,10 +80,53 @@ exports.getUserDetails = async (req, res, next) => {
     if (!users || users.length === 0) {
       return res.status(404).json({ message: "No users found" });
     }
-    res.status(200).json(users);
+
+    // Group users by salesId
+    const grouped = {};
+    users.forEach(user => {
+      const salesId = user.salesId || "Unassigned";
+      if (!grouped[salesId]) grouped[salesId] = [];
+      grouped[salesId].push(user);
+    });
+
+    // Add counts for each group
+    const result = {};
+    Object.entries(grouped).forEach(([salesId, groupUsers]) => {
+      result[salesId] = {
+        users: groupUsers,
+        studentCount: groupUsers.filter(u => u.type === "Student").length,
+        collegeCount: groupUsers.filter(u => u.type === "College").length,
+        companyCount: groupUsers.filter(u => u.type === "Company").length,
+      };
+    });
+
+    res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching user details:", error);
     res.status(500).json({ message: "Server error while fetching users" });
     next(error);
+  }
+};
+
+
+exports.getRecentActivity = async (req, res) => {
+  try {
+    const oneDayAgo = moment().subtract(1, 'days').toDate();
+
+    const recentStudents = await Student.find({ createdAt: { $gte: oneDayAgo } });
+    const recentColleges = await College.find({ createdAt: { $gte: oneDayAgo } });
+    const recentCompanies = await Company.find({ createdAt: { $gte: oneDayAgo } });
+    const recentSupportTickets = await SupportTicket.find({ createdAt: { $gte: oneDayAgo } });
+
+    res.status(200).json({
+      success: true,
+      students: recentStudents,
+      colleges: recentColleges,
+      companies: recentCompanies,
+      supportTickets: recentSupportTickets,
+    });
+  } catch (error) {
+    console.error('Error fetching recent activity:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch recent activity' });
   }
 };
