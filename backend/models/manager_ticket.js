@@ -12,7 +12,7 @@ const SupportTicketSchema = new mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['college', 'company'],
+    enum: ['college', 'company','student'],
     required: true
   },
   subject: {
