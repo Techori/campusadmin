@@ -312,7 +312,7 @@ exports.updateTicketEvaluation = async (req, res) => {
   try {
     const { ticketId, evaluation } = req.body;
     const ticket = await SupportTicket.findOneAndUpdate(
-      { _id: ticketId },
+      { ticketId: ticketId },
       { evaluation },
       { new: true }
     );
@@ -326,15 +326,14 @@ exports.updateTicketEvaluation = async (req, res) => {
 exports.markTicketResolved = async (req, res) => {
   try {
     const { ticketId, secretCode } = req.body;
-    if (secretCode !== process.env.SECRET_CODE) {
+    let ticket = await SupportTicket.findOne({ ticketId: ticketId });
+    if(!ticket) return res.status(404).json({ message: "Ticket not found" });
+    if (secretCode !== ticket.secretCode) {
       return res.status(403).json({ message: "Invalid secret code" });
     }
-    const ticket = await SupportTicket.findOneAndUpdate(
-      { _id: ticketId },
-      { status: "resolved" },
-      { new: true }
-    );
-    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+    ticket.status = "resolved";
+    ticket.closed = true;
+    await ticket.save();
     res.json(ticket);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });

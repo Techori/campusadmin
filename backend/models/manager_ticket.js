@@ -12,7 +12,7 @@ const SupportTicketSchema = new mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['college', 'company', 'student'],
+    enum: ['College', 'Company', 'Student', 'student','college','company', ''],
     required: true
   },
   subject: {
@@ -77,7 +77,6 @@ const SupportTicketSchema = new mongoose.Schema({
 
 // Update the updatedAt field before saving
 SupportTicketSchema.pre('save', function(next) {
-  this.userType = this.userType.toLowerCase();
   this.updatedAt = Date.now();
   next();
 });
