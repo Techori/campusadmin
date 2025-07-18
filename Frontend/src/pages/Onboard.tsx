@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import{ Badge } from "@/components/ui/badge";
+import { saveAs } from "file-saver";
 
 interface Student {
   id: string;
@@ -46,6 +47,35 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // Helper to get sales username from localStorage
 const getSalesUserName = () => localStorage.getItem("userName") || "";
+
+// Helper to convert array of objects to CSV string
+function arrayToCSV(data: any[], columns: string[]): string {
+  const header = columns.join(",");
+  const rows = data.map(row =>
+    columns.map(col => JSON.stringify(row[col] ?? "")).join(",")
+  );
+  return [header, ...rows].join("\r\n");
+}
+
+function exportCSV(data: any[], columns: string[], filename: string, mapFn?: (row: any) => any) {
+  const mapped = mapFn ? data.map(mapFn) : data;
+  const csv = arrayToCSV(mapped, columns);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  saveAs(blob, filename);
+}
+
+// Helper to format date
+function formatEnrollmentDate(dateStr: string) {
+  const date = new Date(dateStr);
+  return date.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+}
 
 const Onboard = () => {
   const token = localStorage.getItem("token");
@@ -306,14 +336,7 @@ const Onboard = () => {
                               <TableCell className="text-gray-900">{salesUserName}</TableCell>
                               <TableCell className="text-gray-900">{student.name}</TableCell>
                               <TableCell className="text-gray-900">{student.email}</TableCell>
-                              <TableCell className="text-gray-900">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {new Date(student.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                  </div>
-                                  <div className="text-xs text-gray-500">
-                                    {new Date(student.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                  </div>
-                              </TableCell>
+                              <TableCell className="text-gray-900">{formatEnrollmentDate(student.createdAt)}</TableCell>
                               <TableCell className="text-gray-900">{student.iskycVerified ? 'Verified' : 'Not Verified'}</TableCell>
                               <TableCell className="text-gray-900">{student.college}</TableCell>
                             </TableRow>
@@ -391,6 +414,26 @@ const Onboard = () => {
                 </div>
               </TabsContent>
               <TabsContent value="students" className="mt-6">
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-lg font-semibold">Students</h2>
+                  <Button
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => exportCSV(
+                      students,
+                      ["name", "email", "enrollmentDate", "college", "iskycVerified"],
+                      "students.csv",
+                      (row) => ({
+                        name: row.name,
+                        email: row.email,
+                        enrollmentDate: formatEnrollmentDate(row.createdAt),
+                        college: row.college,
+                        iskycVerified: row.iskycVerified
+                      })
+                    )}
+                  >
+                    Export CSV
+                  </Button>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -432,6 +475,26 @@ const Onboard = () => {
                 </Table>
               </TabsContent>
               <TabsContent value="colleges" className="mt-6">
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-lg font-semibold">Colleges</h2>
+                  <Button
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => exportCSV(
+                      colleges,
+                      ["name", "code", "contactEmail", "contactPhone", "enrollmentDate"],
+                      "colleges.csv",
+                      (row) => ({
+                        name: row.name,
+                        code: row.code,
+                        contactEmail: row.contactEmail,
+                        contactPhone: row.contactPhone,
+                        enrollmentDate: row.createdAt ? formatEnrollmentDate(row.createdAt) : ""
+                      })
+                    )}
+                  >
+                    Export CSV
+                  </Button>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -464,6 +527,25 @@ const Onboard = () => {
                 </Table>
               </TabsContent>
               <TabsContent value="companies" className="mt-6">
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-lg font-semibold">Companies</h2>
+                  <Button
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => exportCSV(
+                      companies,
+                      ["name", "contactEmail", "contactPhone", "enrollmentDate"],
+                      "companies.csv",
+                      (row) => ({
+                        name: row.name,
+                        contactEmail: row.contactEmail,
+                        contactPhone: row.contactPhone,
+                        enrollmentDate: row.createdAt ? formatEnrollmentDate(row.createdAt) : ""
+                      })
+                    )}
+                  >
+                    Export CSV
+                  </Button>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>

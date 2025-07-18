@@ -332,28 +332,28 @@ const Support = () => {
           </div>
           {/* Ticket List - full width */}
           <div style={{ width: '100%' }}>
-            <div style={{
-              background: '#fff',
-              borderRadius: '12px',
-              padding: '24px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-              overflowY: 'auto',
-              border: '1px solid #e5e7eb'
-            }}>
+              <div style={{
+                background: '#fff',
+                borderRadius: '12px',
+                padding: '24px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                overflowY: 'auto',
+                border: '1px solid #e5e7eb'
+              }}>
               <h3 style={{ marginBottom: '16px', color: '#1f2937' }}>All Tickets</h3>
-              {tickets.length === 0 ? (
-                <div style={{ color: '#6b7280', textAlign: 'center' }}>No tickets yet</div>
-              ) : (
-                tickets.map(ticket => (
-                  <div
-                    key={ticket.ticketId}
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      marginBottom: '8px',
+                {tickets.length === 0 ? (
+                  <div style={{ color: '#6b7280', textAlign: 'center' }}>No tickets yet</div>
+                ) : (
+                  tickets.map(ticket => (
+                    <div
+                      key={ticket.ticketId}
+                      style={{
+                        padding: '12px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
                       background: '#fff',
-                      transition: 'all 0.2s ease',
+                        transition: 'all 0.2s ease',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center'
@@ -365,10 +365,10 @@ const Support = () => {
                       <div style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', background: getStatusColor(ticket.status) + '20', color: getStatusColor(ticket.status) }}>{ticket.status.replace('_', ' ')}</div>
                     </div>
                     <button onClick={() => handleViewTicket(ticket)} style={{ padding: '6px 16px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer' }}>View</button>
-                  </div>
-                ))
-              )}
-            </div>
+                    </div>
+                  ))
+                )}
+              </div>
           </div>
           {/* Ticket Details Modal */}
           {isDetailsOpen && (
@@ -408,9 +408,9 @@ const Support = () => {
                           onChange={e => setCloseTicketCode(e.target.value)}
                           disabled={isClosing}
                         />
-                        <button
+            <button
                           style={{ marginTop: 12, padding: '8px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}
-                          onClick={handleCloseTicket}
+                    onClick={handleCloseTicket}
                           disabled={isClosing || !closeTicketCode}
                         >
                           {isClosing ? 'Closing...' : 'Close Ticket'}

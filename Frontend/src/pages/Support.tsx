@@ -119,7 +119,7 @@ const Support = () => {
         );
         setTickets(res.data.tickets.map((t: any) => ({
           ...t,
-          id: t.ticketId || t._id,
+          id: t.ticketId,
           email: t.user_email,
           phone: t.user_phone,
           status: t.assignedTo ? t.status : "pending",
@@ -192,7 +192,7 @@ const Support = () => {
   const handleSecretCodeSubmit = (ticketId: string) => {
     if (secretCode === "YOUR_SECRET_CODE") {
       setTickets(tickets.map(ticket => 
-        ticket.id === ticketId ? { ...ticket, status: "active" } : ticket
+        ticket.ticketId === ticketId ? { ...ticket, status: "active" } : ticket
       ));
       toast.success("Ticket marked as active!");
     } else {
@@ -386,7 +386,7 @@ const Support = () => {
                 <div className="space-y-4">
                   {filteredTickets.map((ticket) => (
                     <div 
-                      key={ticket.id} 
+                      key={ticket.ticketId} 
                       className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 border rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-center gap-4">
@@ -445,12 +445,12 @@ const Support = () => {
                               const newValue = e.target.checked;
                               try {
                                 await axios.post(`${API_URL}/api/sales/ticket/evaluation`, {
-                                  ticketId: ticket._id || ticket.id,
+                                  ticketId: ticket.ticketId,
                                   evaluation: newValue,
                                 }, { headers: { Authorization: `Bearer ${token}` } });
                                 setTickets(tickets =>
                                   tickets.map(t =>
-                                    t.id === ticket.id ? { ...t, evaluation: newValue } : t
+                                    t.ticketId === ticket.ticketId ? { ...t, evaluation: newValue } : t
                                   )
                                 );
                                 toast.success(
@@ -470,23 +470,22 @@ const Support = () => {
                           onClick={async () => {
                             const code = prompt("Enter secret code to mark as resolved:");
                             if (!code) return;
-                            if(code != ticket.secretCode) {
-                              toast.error("Invalid secret code");
-                              return;
-                            }
                             try {
-                              const res = await axios.post(`${API_URL}/api/sales/ticket/resolve`, {
-                                ticketId: ticket._id || ticket.id,
+                              await axios.post(`${API_URL}/api/sales/ticket/resolve`, {
+                                ticketId: ticket.ticketId,
                                 secretCode: code,
                               }, { headers: { Authorization: `Bearer ${token}` } });
+                              toast.success("Ticket marked as resolved!");
                               setTickets(tickets =>
                                 tickets.map(t =>
-                                  t.id === ticket.id ? { ...t, status: "resolved" } : t
+                                  t.ticketId === ticket.ticketId ? { ...t, status: "resolved" } : t
                                 )
                               );
-                              toast.success("Ticket marked as resolved!");
-                            } catch (err: any) {
-                              toast.error(err?.response?.data?.message || "Failed to mark as resolved");
+                            } catch (err) {
+                              toast.error(
+                                err?.response?.data?.message ||
+                                (err?.message ? String(err.message) : "Failed to mark as resolved")
+                              );
                             }
                           }}
                         >
@@ -668,3 +667,4 @@ const Support = () => {
 };
 
 export default Support;
+
