@@ -231,8 +231,8 @@ exports.getSupportTicketsBySales = async (req, res) => {
     // Find tickets for these users, EXCLUDING escalatedToManager:true
     const tickets = await SupportTicket.find({
       $or: [
-        { userType: 'college', userId: { $in: collegeIds } },
-        { userType: 'company', userId: { $in: companyIds } }
+        { userType: 'college', userType:'College', userId: { $in: collegeIds } },
+        { userType: 'company', userType:'Company', userId: { $in: companyIds } }
       ],
       escalatedToManager: { $ne: true }
     }).lean();
@@ -246,11 +246,11 @@ exports.getSupportTicketsBySales = async (req, res) => {
     const ticketsWithContact = tickets.map(ticket => {
       let email = "";
       let phone = "";
-      if (ticket.userType === "college" && collegeMap[ticket.userId]) {
+      if ((ticket.userType === "college" || ticket.userType === "College") && collegeMap[ticket.userId]) {
         email = collegeMap[ticket.userId].contactEmail;
         phone = collegeMap[ticket.userId].contactPhone;
       }
-      if (ticket.userType === "company" && companyMap[ticket.userId]) {
+      if ((ticket.userType === "company" || ticket.userType === "Company") && companyMap[ticket.userId]) {
         email = companyMap[ticket.userId].contactEmail;
         phone = companyMap[ticket.userId].contactPhone;
       }
@@ -381,7 +381,7 @@ exports.getSupportTicketsByUserID = async(req, res) => {
     const tickets = await SupportTicket.find({  $or: [
     { user_email: mail },
     { assignedTo: mail }
-  ]});
+  ]}).sort({createdAt: -1}).lean();
 
     res.status(200).json({ success: true, tickets });
   } catch (error) {
